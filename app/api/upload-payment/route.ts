@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads', 'payments');
+import { saveScreenshot } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
     try {
@@ -18,21 +15,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
         }
 
-        const ext = matches[1]; // png, jpg, jpeg, webp
-        const data = matches[2];
-        const buffer = Buffer.from(data, 'base64');
+        const ext = matches[1];                    // png, jpg, jpeg, webp
+        const mimeType = `image/${ext}`;
+        const buffer = Buffer.from(matches[2], 'base64');
 
-        // Filename: payment_<sanitized-email>_<timestamp>.<ext>
         const sanitizedEmail = email.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const timestamp = Date.now();
-        const filename = `payment_${sanitizedEmail}_${timestamp}.${ext}`;
-        const filePath = path.join(UPLOAD_DIR, filename);
+        const filename = `payment_${sanitizedEmail}_${Date.now()}.${ext}`;
 
-        // Ensure directory exists
-        fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-        fs.writeFileSync(filePath, buffer);
+        // Save image binary to MongoDB — returns the MongoDB _id string
+        const screenshotId = await saveScreenshot(email, filename, mimeType, buffer);
 
-        return NextResponse.json({ filename, path: `/data/uploads/payments/${filename}` });
+        return NextResponse.json({ filename: screenshotId });
     } catch (err) {
         console.error('Upload error:', err);
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

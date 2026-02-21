@@ -18,6 +18,8 @@ export default function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [college, setCollege] = useState('');
+    const [gender, setGender] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [otp, setOtp] = useState('');
@@ -106,6 +108,8 @@ export default function RegisterPage() {
         if (!phone.trim() || !/^\+?[\d\s-]{10,}$/.test(phone)) {
             setError('Enter a valid phone number.'); return;
         }
+        if (!college.trim()) { setError('College / Institution name is required.'); return; }
+        if (!gender) { setError('Please select your gender.'); return; }
         if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
         if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
         setStep('payment');
@@ -142,6 +146,8 @@ export default function RegisterPage() {
                     name: name.trim(),
                     email,
                     phone: phone.trim(),
+                    college: college.trim(),
+                    gender,
                     password,
                     emailVerified,
                     paymentVerified,
@@ -322,6 +328,37 @@ export default function RegisterPage() {
                             onChange={e => setPhone(e.target.value)}
                             className="form-input"
                         />
+                    </div>
+
+                    {/* COLLEGE */}
+                    <div className="form-group">
+                        <label>College / Institution</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. IIT Kharagpur, Delhi University…"
+                            value={college}
+                            onChange={e => setCollege(e.target.value)}
+                            required
+                            className="form-input"
+                        />
+                    </div>
+
+                    {/* GENDER */}
+                    <div className="form-group">
+                        <label>Gender</label>
+                        <select
+                            value={gender}
+                            onChange={e => setGender(e.target.value)}
+                            required
+                            className="form-input"
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <option value="">Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-binary">Non-binary</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
                     </div>
 
                     {/* PASSWORD */}

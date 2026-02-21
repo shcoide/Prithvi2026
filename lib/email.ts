@@ -1,19 +1,34 @@
+/**
+ * lib/email.ts
+ * Zoho Mail SMTP — works on DigitalOcean Droplet (no port restrictions).
+ *
+ * Env vars:
+ *   ZOHO_SMTP_USER → registration.prithvi.iitkgp@zohomail.in
+ *   ZOHO_SMTP_PASS → app password
+ */
+
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD,
-    },
+  host: 'smtp.zoho.in',
+  port: 465,
+  secure: true,           // SSL on port 465
+  auth: {
+    user: process.env.ZOHO_SMTP_USER,
+    pass: process.env.ZOHO_SMTP_PASS,
+  },
 });
 
+const FROM = `"Prithvi 2026" <${process.env.ZOHO_SMTP_USER}>`;
+
+// ── OTP EMAIL ─────────────────────────────────────────────────────────────────
+
 export async function sendOTPEmail(to: string, otp: string): Promise<void> {
-    await transporter.sendMail({
-        from: `"Prithvi 2026" <${process.env.EMAIL_USER}>`,
-        to,
-        subject: 'Email Verification — Prithvi 2026',
-        html: `
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: 'Email Verification — Prithvi 2026',
+    html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#050a19;color:#fff;border-radius:16px;overflow:hidden">
         <div style="background:linear-gradient(135deg,#4fd1ff,#ffd700);padding:4px"></div>
         <div style="padding:40px">
@@ -34,20 +49,22 @@ export async function sendOTPEmail(to: string, otp: string): Promise<void> {
         </div>
       </div>
     `,
-    });
+  });
 }
 
+// ── REGISTRATION CONFIRMATION EMAIL ───────────────────────────────────────────
+
 export async function sendRegistrationConfirmationEmail(
-    to: string,
-    name: string,
-    registrationId: string,
-    password: string
+  to: string,
+  name: string,
+  registrationId: string,
+  password: string
 ): Promise<void> {
-    await transporter.sendMail({
-        from: `"Prithvi 2026" <${process.env.EMAIL_USER}>`,
-        to,
-        subject: `🎉 Registration Successful — ${registrationId} | Prithvi 2026`,
-        html: `
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `🎉 Registration Successful — ${registrationId} | Prithvi 2026`,
+    html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#050a19;color:#fff;border-radius:16px;overflow:hidden">
         <div style="background:linear-gradient(135deg,#4fd1ff,#ffd700);padding:4px"></div>
         <div style="padding:40px">
@@ -58,7 +75,6 @@ export async function sendRegistrationConfirmationEmail(
             Your registration for <strong style="color:#4fd1ff">Prithvi 2026</strong> has been confirmed.
             We look forward to seeing you from <strong>3–5 April 2026</strong> at IIT Kharagpur!
           </p>
-
           <div style="background:rgba(79,209,255,0.08);border:1px solid rgba(79,209,255,0.25);border-radius:14px;padding:28px;margin-bottom:28px">
             <h3 style="color:#ffd700;margin-bottom:18px;font-size:16px;letter-spacing:1px">YOUR CREDENTIALS</h3>
             <table style="width:100%;border-collapse:collapse">
@@ -72,16 +88,14 @@ export async function sendRegistrationConfirmationEmail(
               </tr>
             </table>
           </div>
-
           <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:18px;margin-bottom:28px">
             <p style="color:#ffd700;font-size:13px;margin:0">
               ⚠️ Please save your Registration ID and password. Use them to login at the Prithvi 2026 portal.
             </p>
           </div>
-
           <p style="color:#ccc;font-size:14px;line-height:1.6">
             🌍 <strong>3–5 April 2026</strong> · IIT Kharagpur, West Bengal, India<br>
-            ✉️ prithvi.gg.iitkgp@gmail.com
+            ✉️ registration.prithvi.iitkgp@zohomail.in
           </p>
         </div>
         <div style="background:rgba(0,0,0,0.5);padding:18px;text-align:center;color:#555;font-size:12px">
@@ -89,5 +103,5 @@ export async function sendRegistrationConfirmationEmail(
         </div>
       </div>
     `,
-    });
+  });
 }

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Registration ID and password required' }, { status: 400 });
         }
 
-        const user = getUserByRegistrationId(registrationId.trim().toUpperCase());
+        const user = await getUserByRegistrationId(registrationId.trim().toUpperCase());
         if (!user) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }

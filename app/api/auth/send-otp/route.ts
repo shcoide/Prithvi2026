@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Check if already registered
-        const existing = getUserByEmail(email);
+        const existing = await getUserByEmail(email);
         if (existing) {
             return NextResponse.json({ error: 'This email is already registered' }, { status: 409 });
         }

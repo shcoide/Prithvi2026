@@ -7,10 +7,13 @@ import { appendRegistrationToSheet } from '@/lib/sheets';
 
 export async function POST(req: NextRequest) {
     try {
-        const { name, email, phone, password, emailVerified, paymentVerified, paymentScreenshot } = await req.json();
+        const {
+            name, email, phone, college, gender,
+            password, emailVerified, paymentVerified, paymentScreenshot,
+        } = await req.json();
 
-        // Basic validation
-        if (!name || !email || !phone || !password) {
+        // Validation
+        if (!name || !email || !phone || !college || !gender || !password) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
         if (!emailVerified) {
@@ -21,31 +24,31 @@ export async function POST(req: NextRequest) {
         }
 
         // Check duplicate
-        const existing = getUserByEmail(email);
+        const existing = await getUserByEmail(email);
         if (existing) {
             return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
         }
 
-        // Hash password
         const passwordHash = await bcrypt.hash(password, 12);
-
-        // Generate registration ID
-        const registrationId = getNextRegistrationId();
+        const registrationId = await getNextRegistrationId();
         const registeredAt = new Date().toISOString();
 
-        // Save user to local JSON DB (including screenshot filename)
-        const user = {
+        await createUser({
             registrationId,
             name: name.trim(),
             email: email.toLowerCase(),
             phone: phone.trim(),
+            college: college.trim(),
+            gender,
             passwordHash,
             emailVerified: true,
             paymentVerified: true,
-            paymentScreenshot: paymentScreenshot || '',
+            paymentScreenshot: paymentScreenshot || '',  // MongoDB _id of screenshot
+            paymentStatus: 'pending',
+            adminVerified: false,
+            adminNote: '',
             registeredAt,
-        };
-        createUser(user);
+        } as never);
 
         // Save to Google Sheet (non-blocking)
         appendRegistrationToSheet({
@@ -53,6 +56,8 @@ export async function POST(req: NextRequest) {
             name: name.trim(),
             email: email.toLowerCase(),
             phone: phone.trim(),
+            college: college.trim(),
+            gender,
             paymentScreenshot: paymentScreenshot || '',
             registeredAt,
         }).catch((err) => console.error('Google Sheets write failed:', err));
@@ -61,7 +66,6 @@ export async function POST(req: NextRequest) {
         sendRegistrationConfirmationEmail(email, name, registrationId, password)
             .catch((err) => console.error('Failed to send confirmation email:', err));
 
-        // Issue JWT
         const token = signToken({ registrationId, email: email.toLowerCase(), name: name.trim() });
 
         const response = NextResponse.json({

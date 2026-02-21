@@ -6,11 +6,16 @@
       "name": "Shivam",
       "email": "shivamshibu2003@gmail.com",
       "phone": "+916206430346",
+      "college": "",
+      "gender": "",
       "passwordHash": "$2b$12$XYZxHvB6.jvewmIMwUhJTOKwC5XKZF7mN/t.MfbsFR247tunFjFHa",
       "emailVerified": true,
       "paymentVerified": true,
       "paymentScreenshot": "payment_shivamshibu2003_gmail_com_1771589783357.jpeg",
-      "registeredAt": "2026-02-20T12:16:24.107Z"
+      "paymentStatus": "rejected",
+      "adminVerified": true,
+      "registeredAt": "2026-02-20T12:16:24.107Z",
+      "adminNote": ""
     }
   ]
 }
