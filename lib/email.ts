@@ -11,12 +11,15 @@ import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.zoho.in',
-  port: 465,
-  secure: true,           // SSL on port 465
+  port: 587,
+  secure: false, // Must be false for 587
   auth: {
     user: process.env.ZOHO_SMTP_USER,
     pass: process.env.ZOHO_SMTP_PASS,
   },
+  tls: {
+    rejectUnauthorized: false // This prevents the "Handshake" error on Linux
+  }
 });
 
 const FROM = `"Prithvi 2026" <${process.env.ZOHO_SMTP_USER}>`;
