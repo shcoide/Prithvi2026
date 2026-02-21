@@ -1,23 +1,19 @@
 /**
  * lib/storage.ts
- * Screenshots are stored in MongoDB (not S3 or local disk).
- * This file re-exports the DB helpers under the storage interface so
- * calling code doesn't need to change its import names.
+ * Screenshots are now stored securely via Uploadthing.
+ * The database only holds the direct HTTPS URL string.
  */
-
-export { saveScreenshot as uploadPaymentScreenshot, getScreenshotById } from './db';
 
 /**
- * Returns the admin API URL for viewing a screenshot.
- * The storedPath is the MongoDB _id string of the Screenshot document.
+ * Returns the public URL for a screenshot.
+ * Since we use Uploadthing, the string saved in MongoDB is already a fully qualified URL.
  */
-export function getScreenshotUrl(screenshotId: string): string {
-    if (!screenshotId) return '';
-    if (screenshotId.startsWith('http')) return screenshotId;
-    return `/api/addmin/screenshot?id=${encodeURIComponent(screenshotId)}`;
+export function getScreenshotUrl(screenshotUrl: string): string {
+    if (!screenshotUrl) return '';
+    return screenshotUrl;
 }
 
-// Used by admin/users route — same thing for MongoDB
-export async function getSignedDownloadUrl(screenshotId: string): Promise<string> {
-    return getScreenshotUrl(screenshotId);
+// Used by admin/users route to view/download the image
+export async function getSignedDownloadUrl(screenshotUrl: string): Promise<string> {
+    return getScreenshotUrl(screenshotUrl);
 }

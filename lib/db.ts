@@ -3,9 +3,8 @@
  * All Mongoose models + CRUD helpers.
  *
  * Collections:
- *   users       – registered participants
- *   screenshots – payment screenshot binaries (stored in MongoDB, not on disk)
- *   counters    – auto-increment for registration IDs
+ * users       – registered participants
+ * counters    – auto-increment for registration IDs
  */
 
 import mongoose, { Schema, model, models, Document } from 'mongoose';
@@ -25,21 +24,12 @@ export interface IUser extends Document {
     passwordHash: string;
     emailVerified: boolean;
     paymentVerified: boolean;
-    /** stored as MongoDB ObjectId string pointing to a Screenshot document */
-    paymentScreenshot: string;
+    /** URL pointing to the image on Uploadthing */
+    paymentScreenshot: string; 
     paymentStatus: 'pending' | 'approved' | 'rejected';
-    /** Admin-only master verification toggle — never exposed to end-users */
     adminVerified: boolean;
     adminNote: string;
     registeredAt: string;
-}
-
-export interface IScreenshot extends Document {
-    filename: string;
-    mimeType: string;
-    data: Buffer;
-    email: string;
-    uploadedAt: Date;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,19 +46,11 @@ const UserSchema = new Schema<IUser>({
     passwordHash: { type: String, required: true },
     emailVerified: { type: Boolean, default: false },
     paymentVerified: { type: Boolean, default: false },
-    paymentScreenshot: { type: String, default: '' },   // Screenshot _id as string
+    paymentScreenshot: { type: String, default: '' },   // Now expects the Uploadthing URL string
     paymentStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     adminVerified: { type: Boolean, default: false },
     adminNote: { type: String, default: '' },
     registeredAt: { type: String, required: true },
-});
-
-const ScreenshotSchema = new Schema<IScreenshot>({
-    filename: { type: String, required: true },
-    mimeType: { type: String, required: true },
-    data: { type: Buffer, required: true },
-    email: { type: String, required: true },
-    uploadedAt: { type: Date, default: Date.now },
 });
 
 const CounterSchema = new Schema({
@@ -77,15 +59,14 @@ const CounterSchema = new Schema({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MODELS  (guard against hot-reload re-registration in Next.js dev)
+// MODELS
 // ─────────────────────────────────────────────────────────────────────────────
 
 const User = (models.User as mongoose.Model<IUser>) || model<IUser>('User', UserSchema);
-const Screenshot = (models.Screenshot as mongoose.Model<IScreenshot>) || model<IScreenshot>('Screenshot', ScreenshotSchema);
 const Counter = models.Counter || model('Counter', CounterSchema);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// COUNTER — auto-increment registration ID
+// COUNTER
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getNextRegistrationId(): Promise<string> {
@@ -133,17 +114,6 @@ export async function updatePaymentStatus(
     const update: Partial<IUser> = { paymentStatus: status };
     if (adminNote !== undefined) update.adminNote = adminNote;
 
-    // If rejecting, we cleanup the actual screenshot file to save space
-    if (status === 'rejected') {
-        const user = await User.findOne({ registrationId });
-        if (user && user.paymentScreenshot) {
-            if (!user.paymentScreenshot.startsWith('http')) {
-                await Screenshot.findByIdAndDelete(user.paymentScreenshot).exec();
-            }
-            update.paymentScreenshot = ''; // clear reference
-        }
-    }
-
     const result = await User.updateOne({ registrationId }, { $set: update });
     return result.modifiedCount > 0;
 }
@@ -158,27 +128,4 @@ export async function setAdminVerified(
     if (adminNote !== undefined) update.adminNote = adminNote;
     const result = await User.updateOne({ registrationId }, { $set: update });
     return result.modifiedCount > 0;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREENSHOT CRUD
-// ─────────────────────────────────────────────────────────────────────────────
-
-export async function saveScreenshot(
-    email: string,
-    filename: string,
-    mimeType: string,
-    buffer: Buffer
-): Promise<string> {
-    await connectDB();
-    const doc = new Screenshot({ email, filename, mimeType, data: buffer });
-    const saved = await doc.save();
-    // Return the MongoDB _id as the reference string stored on the user
-    return (saved._id as mongoose.Types.ObjectId).toString();
-}
-
-export async function getScreenshotById(id: string): Promise<IScreenshot | null> {
-    await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(id)) return null;
-    return Screenshot.findById(id).lean<IScreenshot>();
 }
