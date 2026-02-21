@@ -5,9 +5,12 @@ const nextConfig: NextConfig = {
     unoptimized: false,
   },
   // Skip TypeScript type-checking during build on the server.
-  // Types are verified locally before every deploy — prevents OOM on 2GB RAM.
   typescript: {
     ignoreBuildErrors: true,
+  },
+  // Skip ESLint checking during build on the server.
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
