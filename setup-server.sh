@@ -1,68 +1,33 @@
 #!/bin/bash
-# ─────────────────────────────────────────────────────────────────────────────
-# setup-server.sh  — ONE-TIME initial setup on a fresh Ubuntu 22.04 Droplet
-#
-# Run this after SSH-ing into the Droplet as root:
-#   ssh root@206.189.140.159
-#   bash setup-server.sh
-# ─────────────────────────────────────────────────────────────────────────────
+# Full server setup — paste this INSIDE the Droplet after SSH
+# ssh root@206.189.140.159
 
 set -e
-echo "╔══════════════════════════════════════════════════════╗"
-echo "║   Prithvi 2026 — Droplet Initial Setup              ║"
-echo "╚══════════════════════════════════════════════════════╝"
-
-DOMAIN="prithvi2026.com"
-APP_DIR="/var/www/prithvi2026"
-NODE_VERSION="20"
-
-# ── 1. System update ──────────────────────────────────────────────────────────
-echo ""
-echo "▶ 1/9  Updating system packages…"
+echo "=== STEP 1: Update system ==="
 apt-get update -y && apt-get upgrade -y
 
-# ── 2. Install Node.js 20 LTS ─────────────────────────────────────────────────
-echo ""
-echo "▶ 2/9  Installing Node.js ${NODE_VERSION} LTS…"
-curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
+echo "=== STEP 2: Install Node.js 20 ==="
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt-get install -y nodejs
-node -v && npm -v
+node -v
+npm -v
 
-# ── 3. Install PM2 globally ───────────────────────────────────────────────────
-echo ""
-echo "▶ 3/9  Installing PM2…"
+echo "=== STEP 3: Install PM2, Nginx, Certbot ==="
 npm install -g pm2
+apt-get install -y nginx certbot python3-certbot-nginx git
 
-# ── 4. Install Nginx ──────────────────────────────────────────────────────────
-echo ""
-echo "▶ 4/9  Installing Nginx…"
-apt-get install -y nginx
-systemctl enable nginx
-systemctl start nginx
-
-# ── 5. Install Certbot (Let's Encrypt) ───────────────────────────────────────
-echo ""
-echo "▶ 5/9  Installing Certbot…"
-apt-get install -y certbot python3-certbot-nginx
-
-# ── 6. Configure firewall (UFW) ───────────────────────────────────────────────
-echo ""
-echo "▶ 6/9  Configuring firewall…"
+echo "=== STEP 4: Firewall ==="
 ufw allow OpenSSH
-ufw allow 'Nginx Full'
+ufw allow 80
+ufw allow 443
 ufw --force enable
 ufw status
 
-# ── 7. Create app directory ───────────────────────────────────────────────────
-echo ""
-echo "▶ 7/9  Creating app directory at ${APP_DIR}…"
-mkdir -p $APP_DIR
+echo "=== STEP 5: Create app folder ==="
+mkdir -p /var/www/prithvi2026
 
-# ── 8. Set up Nginx site config ───────────────────────────────────────────────
-echo ""
-echo "▶ 8/9  Configuring Nginx for ${DOMAIN}…"
-
-cat > /etc/nginx/sites-available/prithvi2026 << 'NGINX_CONF'
+echo "=== STEP 6: Configure Nginx ==="
+cat > /etc/nginx/sites-available/prithvi2026 << 'EOF'
 server {
     listen 80;
     listen [::]:80;
@@ -77,7 +42,6 @@ server {
 
     access_log /var/log/nginx/prithvi2026.access.log;
     error_log  /var/log/nginx/prithvi2026.error.log;
-
     client_max_body_size 20M;
 
     location / {
@@ -99,52 +63,16 @@ server {
         access_log off;
         add_header Cache-Control "public, immutable";
     }
-
-    location /favicon.ico {
-        alias /var/www/prithvi2026/public/favicon.ico;
-        access_log off;
-    }
 }
-NGINX_CONF
+EOF
 
-# Enable the site
-ln -sf /etc/nginx/sites-available/prithvi2026 /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/prithvi2026 /etc/nginx/sites-enabled/prithvi2026
 rm -f /etc/nginx/sites-enabled/default
+nginx -t
+systemctl enable nginx
+systemctl restart nginx
+echo "Nginx running!"
+curl -s -o /dev/null -w "Nginx check: HTTP %{http_code}\n" http://localhost
 
-nginx -t && systemctl reload nginx
-echo "✅ Nginx configured!"
-
-# ── 9. Get SSL certificate ────────────────────────────────────────────────────
-echo ""
-echo "▶ 9/9  Obtaining SSL certificate for ${DOMAIN}…"
-echo "⚠️  Make sure DNS A records are pointing to this server BEFORE this step!"
-echo "    prithvi2026.com     → 206.189.140.159"
-echo "    www.prithvi2026.com → 206.189.140.159"
-echo ""
-read -p "DNS is already pointing to this server? (y/n): " dns_ready
-
-if [ "$dns_ready" = "y" ] || [ "$dns_ready" = "Y" ]; then
-    certbot --nginx \
-        -d prithvi2026.com \
-        -d www.prithvi2026.com \
-        --non-interactive \
-        --agree-tos \
-        --email registration.prithvi.iitkgp@zohomail.in \
-        --redirect
-    echo "✅ SSL certificate installed!"
-
-    # Auto-renew
-    systemctl enable certbot.timer
-    systemctl start certbot.timer
-    echo "✅ Auto-renewal enabled (renews every 60 days)"
-else
-    echo "⏭️  Skipping SSL. Run this after DNS is set up:"
-    echo "   certbot --nginx -d prithvi2026.com -d www.prithvi2026.com"
-fi
-
-echo ""
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║  ✅ Server setup complete!                               ║"
-echo "║                                                          ║"
-echo "║  Next step: run ./deploy.sh to deploy the app           ║"
-echo "╚══════════════════════════════════════════════════════════╝"
+echo "=== ALL DONE — server is ready for app deployment ==="
+echo "Now run: bash deploy.sh on your Mac to upload the app"
