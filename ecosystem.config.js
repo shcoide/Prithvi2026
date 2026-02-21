@@ -24,9 +24,9 @@ module.exports = {
                 // ── MongoDB Atlas ─────────────────────────────────────────────
                 MONGODB_URI: 'mongodb+srv://Prithvi_data:dbDataPrithvi26@prithvidata.fgtw4p2.mongodb.net/prithvi2026?appName=PrithviData',
 
-                // ── Zoho Mail ─────────────────────────────────────────────────
-                ZOHO_SMTP_USER: 'registration.prithvi.iitkgp@zohomail.in',
-                ZOHO_SMTP_PASS: 'zzYUuFjm038j',
+                // ── Brevo Mail ─────────────────────────────────────────────────
+                BREVO_SMTP_USER: 'participation.prithvi.iitkgp@gmail.com',
+                BREVO_SMTP_KEY: 'digital_ocean_will_have_this_key',
 
                 // ── Admin Panel ───────────────────────────────────────────────
                 // ⚠️  Change these before first deploy!

@@ -1,28 +1,28 @@
 /**
  * lib/email.ts
- * Zoho Mail SMTP — works on DigitalOcean Droplet (no port restrictions).
+ * Brevo Mail SMTP — works on DigitalOcean Droplet (no port restrictions).
  *
  * Env vars:
- *   ZOHO_SMTP_USER → registration.prithvi.iitkgp@zohomail.in
- *   ZOHO_SMTP_PASS → app password
+ *   BREVO_SMTP_USER → participation.prithvi.iitkgp@gmail.com
+ *   BREVO_SMTP_KEY → api key
  */
 
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.zoho.in',
+  host: 'smtp-relay.brevo.com',
   port: 587,
   secure: false, // Must be false for 587
   auth: {
-    user: process.env.ZOHO_SMTP_USER,
-    pass: process.env.ZOHO_SMTP_PASS,
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_KEY,
   },
   tls: {
     rejectUnauthorized: false // This prevents the "Handshake" error on Linux
   }
 });
 
-const FROM = `"Prithvi 2026" <${process.env.ZOHO_SMTP_USER}>`;
+const FROM = `"Prithvi-Droplet-2026" <${process.env.BREVO_SMTP_USER}>`;
 
 // ── OTP EMAIL ─────────────────────────────────────────────────────────────────
 
@@ -98,7 +98,7 @@ export async function sendRegistrationConfirmationEmail(
           </div>
           <p style="color:#ccc;font-size:14px;line-height:1.6">
             🌍 <strong>3–5 April 2026</strong> · IIT Kharagpur, West Bengal, India<br>
-            ✉️ registration.prithvi.iitkgp@zohomail.in
+            ✉️ participation.prithvi.iitkgp@gmail.com
           </p>
         </div>
         <div style="background:rgba(0,0,0,0.5);padding:18px;text-align:center;color:#555;font-size:12px">
