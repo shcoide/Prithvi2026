@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
             passwordHash,
             emailVerified: true,
             paymentVerified: true,
-            paymentScreenshot: paymentScreenshot || '',  // MongoDB _id of screenshot
+            paymentScreenshot: paymentScreenshot || '',  // UploadThing URL string
             paymentStatus: 'pending',
             adminVerified: false,
             adminNote: '',
