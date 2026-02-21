@@ -132,6 +132,18 @@ export async function updatePaymentStatus(
     await connectDB();
     const update: Partial<IUser> = { paymentStatus: status };
     if (adminNote !== undefined) update.adminNote = adminNote;
+
+    // If rejecting, we cleanup the actual screenshot file to save space
+    if (status === 'rejected') {
+        const user = await User.findOne({ registrationId });
+        if (user && user.paymentScreenshot) {
+            if (!user.paymentScreenshot.startsWith('http')) {
+                await Screenshot.findByIdAndDelete(user.paymentScreenshot).exec();
+            }
+            update.paymentScreenshot = ''; // clear reference
+        }
+    }
+
     const result = await User.updateOne({ registrationId }, { $set: update });
     return result.modifiedCount > 0;
 }
@@ -167,5 +179,6 @@ export async function saveScreenshot(
 
 export async function getScreenshotById(id: string): Promise<IScreenshot | null> {
     await connectDB();
+    if (!mongoose.Types.ObjectId.isValid(id)) return null;
     return Screenshot.findById(id).lean<IScreenshot>();
 }

@@ -13,6 +13,7 @@ export { saveScreenshot as uploadPaymentScreenshot, getScreenshotById } from './
  */
 export function getScreenshotUrl(screenshotId: string): string {
     if (!screenshotId) return '';
+    if (screenshotId.startsWith('http')) return screenshotId;
     return `/api/addmin/screenshot?id=${encodeURIComponent(screenshotId)}`;
 }
 

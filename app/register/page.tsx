@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/AuthContext';
+import { uploadFiles } from '@/utils/uploadthing';
 
 type Step = 'form' | 'payment' | 'success';
 
@@ -30,6 +31,7 @@ export default function RegisterPage() {
     const [otpSent, setOtpSent] = useState(false);
     const [emailVerified, setEmailVerified] = useState(false);
     const [paymentScreenshot, setPaymentScreenshot] = useState<string | null>(null);
+    const [paymentFile, setPaymentFile] = useState<File | null>(null);
     const [paymentVerified, setPaymentVerified] = useState(false);
 
     // Loading / error
@@ -91,6 +93,7 @@ export default function RegisterPage() {
     function handleScreenshot(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
+        setPaymentFile(file);
         const reader = new FileReader();
         reader.onload = () => {
             setPaymentScreenshot(reader.result as string);
@@ -117,28 +120,30 @@ export default function RegisterPage() {
 
     // ── FINAL SUBMIT ──────────────────────────────────────────────────────────
     async function handleSubmit() {
-        if (!paymentVerified || !paymentScreenshot) {
+        if (!paymentVerified || !paymentFile) {
             setError('Please upload the payment screenshot first.');
             return;
         }
         setError('');
         setSubmitting(true);
         try {
-            // Step 1: Upload the screenshot image to the server
-            let savedFilename = '';
-            const uploadRes = await fetch('/api/upload-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ base64: paymentScreenshot, email }),
-            });
-            if (uploadRes.ok) {
-                const uploadData = await uploadRes.json();
-                savedFilename = uploadData.filename;
-            } else {
-                console.warn('Screenshot upload failed — continuing without it');
+            // Upload the screenshot file to UploadThing
+            let savedUrl = '';
+            try {
+                const uploadRes = await uploadFiles("paymentScreenshot", {
+                    files: [paymentFile],
+                });
+                if (uploadRes && uploadRes.length > 0) {
+                    savedUrl = uploadRes[0].url;
+                } else {
+                    throw new Error("No URL returned from upload");
+                }
+            } catch (err) {
+                console.error("Upload Error:", err);
+                throw new Error("Screenshot upload failed. Please try again.");
             }
 
-            // Step 2: Register with the saved filename
+            // Step 2: Register with the uploaded URL
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -151,7 +156,7 @@ export default function RegisterPage() {
                     password,
                     emailVerified,
                     paymentVerified,
-                    paymentScreenshot: savedFilename,
+                    paymentScreenshot: savedUrl,
                 }),
             });
             const data = await res.json();
@@ -202,6 +207,7 @@ export default function RegisterPage() {
                     <div className="qr-wrapper">
                         <Image src="/payment-qr.png?v=2" alt="Payment QR Code" width={260} height={260} className="qr-image" unoptimized />
                         <p className="qr-note">🔒 Scan & Pay via UPI / Any Payment App</p>
+                        <p className="qr-amount" style={{ fontSize: '18px', fontWeight: 'bold', color: '#ffd700', marginTop: '8px', zIndex: 10 }}>Amount to pay: ₹600</p>
                     </div>
 
                     <div className="screenshot-upload-area" onClick={() => fileInputRef.current?.click()}>

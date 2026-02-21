@@ -11,6 +11,7 @@
     "@aws-sdk/client-s3": "^3.995.0",
     "@aws-sdk/lib-storage": "^3.995.0",
     "@aws-sdk/s3-request-presigner": "^3.995.0",
+    "@uploadthing/react": "^7.3.3",
     "bcryptjs": "^3.0.3",
     "googleapis": "^171.4.0",
     "jsonwebtoken": "^9.0.3",
@@ -18,7 +19,8 @@
     "next": "16.1.6",
     "nodemailer": "^8.0.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
