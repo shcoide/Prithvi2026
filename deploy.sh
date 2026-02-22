@@ -33,6 +33,10 @@ echo "✅ Build complete"
 # ── 2. Sync to Droplet ────────────────────────────────────────────────────────
 echo ""
 echo "▶ 2/3  Uploading to Droplet…"
+
+# Clean old .next cache on the server first to prevent old/new file mixups
+ssh "${DROPLET_USER}@${DROPLET_IP}" "rm -rf ${APP_DIR}/.next"
+
 rsync -avz --progress \
     --exclude='.git' \
     --exclude='node_modules' \
@@ -51,7 +55,7 @@ ssh "${DROPLET_USER}@${DROPLET_IP}" << 'REMOTE'
     set -e
     cd /var/www/prithvi2026
     npm install --production
-    pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+    pm2 restart ecosystem.config.js --update-env || pm2 start ecosystem.config.js
     pm2 save
     echo "✅ App restarted"
     pm2 status
