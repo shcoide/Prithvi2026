@@ -4,7 +4,7 @@ export const contactData = {
     team: [
         {
             id: 1,
-            name: 'Roysouvik',
+            name: 'Souvik Roy',
             role: 'Logistics',
             phone: '+91 8513955455',
             email: 'roysouvik.geology@gmail.com',

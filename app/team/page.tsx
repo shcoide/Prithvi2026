@@ -44,6 +44,22 @@ const teamData = {
             linkedin: 'https://www.linkedin.com/in/siddharth-satish-karjini-55b161210',
             image: '/assets/images/teams/t4.png',
         },
+        {
+            id: 5,
+            name: 'Yash Gupta',
+            role: 'Manager Event 2026 · PRITHVI',
+            email: 'yashgupta980452@gmail.com',
+            linkedin: 'https://www.linkedin.com/in/yash-kumar-gupta-b02a3919a',
+            image: '/assets/images/teams/t5.jpeg',
+        },
+        {
+            id: 6,
+            name: 'Ankit Dutta',
+            role: 'Manager Event 2026 · PRITHVI',
+            email: 'ankitduttaiitkgp@gmail.com',
+            linkedin: 'https://www.linkedin.com/in/ankit-dutta-97a9aa23a/',
+            image: '/assets/images/teams/t6.jpeg',
+        },
     ],
 };
 
