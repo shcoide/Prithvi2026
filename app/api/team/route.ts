@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const teamData = {
+const teamData = {
     leaders: [
         {
             id: 1,
@@ -21,38 +21,106 @@ export const teamData = {
             image: '/assets/images/teams/t2.png',
         },
     ],
-    managers: [
+    managerGroups: [
         {
-            id: 3,
-            name: 'Dishari Chakraborty',
-            role: 'Manager PR 2026 · PRITHVI',
-            email: 'disharichak2021@gmail.com',
-            linkedin: 'https://www.linkedin.com/in/dishari-chakraborty2002',
-            image: '/assets/images/teams/t3.png',
+            category: 'Manager - Events/PR',
+            members: [
+                {
+                    id: 3,
+                    name: 'Dishari Chakraborty',
+                    role: 'Manager PR 2026 · PRITHVI',
+                    email: 'disharichak2021@gmail.com',
+                    linkedin: 'https://www.linkedin.com/in/dishari-chakraborty2002',
+                    image: '/assets/images/teams/t3.png',
+                },
+                {
+                    id: 4,
+                    name: 'Siddharth Satish Karjini',
+                    role: 'Manager Event 2026 · PRITHVI',
+                    email: 'siddharthkarjini027@gmail.com',
+                    linkedin: 'https://www.linkedin.com/in/siddharth-satish-karjini-55b161210',
+                    image: '/assets/images/teams/t4.png',
+                },
+                {
+                    id: 5,
+                    name: 'Yash Gupta',
+                    role: 'Manager Event 2026 · PRITHVI',
+                    email: 'yashgupta980452@gmail.com',
+                    linkedin: 'https://www.linkedin.com/in/yash-kumar-gupta-b02a3919a',
+                    image: '/assets/images/teams/t5.jpeg',
+                },
+                {
+                    id: 6,
+                    name: 'Ankit Dutta',
+                    role: 'Manager Event 2026 · PRITHVI',
+                    email: 'ankitduttaiitkgp@gmail.com',
+                    linkedin: 'https://www.linkedin.com/in/ankit-dutta-97a9aa23a/',
+                    image: '/assets/images/teams/t6.jpeg',
+                },
+            ],
         },
         {
-            id: 4,
-            name: 'Siddharth Satish Karjini',
-            role: 'Manager Event 2026 · PRITHVI',
-            email: 'siddharthkarjini027@gmail.com',
-            linkedin: 'https://www.linkedin.com/in/siddharth-satish-karjini-55b161210',
-            image: '/assets/images/teams/t4.png',
+            category: 'Manager - Logistics',
+            members: [
+                {
+                    id: 7,
+                    name: 'Arnab Chatterjee',
+                    role: 'Manager Logistics 2026 · PRITHVI',
+                    email: 'chatterjeearnab734@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t7.jpeg',
+                },
+                {
+                    id: 8,
+                    name: 'Shuvam Kumar',
+                    role: 'Manager Logistics 2026 · PRITHVI',
+                    email: 'iushubhamkumar@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t8.jpeg',
+                },
+                {
+                    id: 9,
+                    name: 'Ayush Garg',
+                    role: 'Manager Logistics 2026 · PRITHVI',
+                    email: 'gargayush.2412@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t9.jpeg',
+                },
+            ],
         },
         {
-            id: 5,
-            name: 'Yash Gupta',
-            role: 'Manager Event 2026 · PRITHVI',
-            email: 'yashgupta980452@gmail.com',
-            linkedin: 'https://www.linkedin.com/in/yash-kumar-gupta-b02a3919a',
-            image: '/assets/images/teams/t5.jpeg',
+            category: 'Manager - Design',
+            members: [
+                {
+                    id: 10,
+                    name: 'Abir Goswami',
+                    role: 'Manager Design 2026 · PRITHVI',
+                    email: 'abirgoswamiprl@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t10.jpeg',
+                },
+                {
+                    id: 11,
+                    name: 'Anuraj Patel',
+                    role: 'Manager Design 2026 · PRITHVI',
+                    email: 'Anuraj.ap9753@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t11.png',
+                },
+            ],
         },
         {
-            id: 6,
-            name: 'Ankit Dutta',
-            role: 'Manager Event 2026 · PRITHVI',
-            email: 'ankitduttaiitkgp@gmail.com',
-            linkedin: 'https://www.linkedin.com/in/ankit-dutta-97a9aa23a/',
-            image: '/assets/images/teams/t6.jpeg',
+            category: 'Manager - Web',
+            members: [
+                {
+                    id: 12,
+                    name: 'Shivam',
+                    role: 'Manager Web 2026 · PRITHVI',
+                    email: 'shivamshibu2003@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t12.jpeg',
+                },
+            ],
         },
     ],
 };
