@@ -63,13 +63,21 @@ const teamData = {
                     linkedin: 'https://www.linkedin.com/in/ankit-dutta-97a9aa23a/',
                     image: '/assets/images/teams/t6.jpeg',
                 },
+                {
+                    id: 7,
+                    name: 'Anvitha Mennem',
+                    role: 'Manager Event 2026 · PRITHVI',
+                    email: 'anvitha.mennem24@gmail.com',
+                    linkedin: '',
+                    image: '/assets/images/teams/t13.jpeg',
+                },
             ],
         },
         {
             category: 'Manager - Logistics',
             members: [
                 {
-                    id: 7,
+                    id: 8,
                     name: 'Arnab Chatterjee',
                     role: 'Manager Logistics 2026 · PRITHVI',
                     email: 'chatterjeearnab734@gmail.com',
@@ -77,7 +85,7 @@ const teamData = {
                     image: '/assets/images/teams/t7.jpeg',
                 },
                 {
-                    id: 8,
+                    id: 9,
                     name: 'Shuvam Kumar',
                     role: 'Manager Logistics 2026 · PRITHVI',
                     email: 'iushubhamkumar@gmail.com',
@@ -85,7 +93,7 @@ const teamData = {
                     image: '/assets/images/teams/t8.jpeg',
                 },
                 {
-                    id: 9,
+                    id: 10,
                     name: 'Ayush Garg',
                     role: 'Manager Logistics 2026 · PRITHVI',
                     email: 'gargayush.2412@gmail.com',
@@ -98,7 +106,7 @@ const teamData = {
             category: 'Manager - Design',
             members: [
                 {
-                    id: 10,
+                    id: 11,
                     name: 'Abir Goswami',
                     role: 'Manager Design 2026 · PRITHVI',
                     email: 'abirgoswamiprl@gmail.com',
@@ -106,7 +114,7 @@ const teamData = {
                     image: '/assets/images/teams/t10.jpeg',
                 },
                 {
-                    id: 11,
+                    id: 12,
                     name: 'Anuraj Patel',
                     role: 'Manager Design 2026 · PRITHVI',
                     email: 'Anuraj.ap9753@gmail.com',
@@ -119,7 +127,7 @@ const teamData = {
             category: 'Manager - Web',
             members: [
                 {
-                    id: 12,
+                    id: 13,
                     name: 'Shivam',
                     role: 'Manager Web 2026 · PRITHVI',
                     email: 'shivamshibu2003@gmail.com',
