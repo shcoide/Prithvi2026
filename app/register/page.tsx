@@ -8,6 +8,9 @@ import { uploadFiles } from '@/utils/uploadthing';
 
 type Step = 'form' | 'payment' | 'success';
 
+// ── Toggle this to re-open registrations ─────────────────────────────────────
+const REGISTRATION_OPEN = false;
+
 export default function RegisterPage() {
     const router = useRouter();
     const { refresh } = useAuth();
@@ -41,6 +44,26 @@ export default function RegisterPage() {
     const [error, setError] = useState('');
     const [otpError, setOtpError] = useState('');
     const [registrationId, setRegistrationId] = useState('');
+
+    // ── REGISTRATION CLOSED SCREEN ────────────────────────────────────────────
+    if (!REGISTRATION_OPEN) {
+        return (
+            <div className="register-hero">
+                <div className="reg-success-card" style={{ textAlign: 'center' }}>
+                    <div className="reg-success-icon">🔒</div>
+                    <h1 className="reg-success-title">Registrations Closed</h1>
+                    <p className="reg-success-sub" style={{ maxWidth: '420px', margin: '0 auto 28px' }}>
+                        Thank you for your interest in <strong>Prithvi 2026</strong>!
+                        Registrations are currently closed. Please check back later or
+                        follow our official channels for updates.
+                    </p>
+                    <div className="reg-success-actions">
+                        <button className="btn" onClick={() => router.push('/')}>Go to Home</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // ── SEND OTP ─────────────────────────────────────────────────────────────
     async function handleSendOTP() {
@@ -206,7 +229,7 @@ export default function RegisterPage() {
 
                     <div className="qr-wrapper">
                         <Image src="/payment-qr.png?v=2" alt="Payment QR Code" width={260} height={260} className="qr-image" unoptimized />
-                        <p className="qr-note">🔒 Scan & Pay via UPI / Any Payment App</p>
+                        <p className="qr-note">🔒 Scan &amp; Pay via UPI / Any Payment App</p>
                         <p className="qr-amount" style={{ fontSize: '18px', fontWeight: 'bold', color: '#ffd700', marginTop: '8px', zIndex: 10 }}>Amount to pay: ₹600</p>
                     </div>
 
