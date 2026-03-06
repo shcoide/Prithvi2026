@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateOTP, setOTP } from '@/lib/otp';
 import { sendOTPEmail } from '@/lib/email';
 import { getUserByEmail } from '@/lib/db';
+import { REGISTRATION_OPEN } from '@/lib/registrationConfig';
 
 export async function POST(req: NextRequest) {
+    if (!REGISTRATION_OPEN) {
+        return NextResponse.json(
+            { error: 'Registrations are currently closed.' },
+            { status: 403 }
+        );
+    }
     try {
         const { email } = await req.json();
 

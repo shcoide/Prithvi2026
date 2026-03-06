@@ -4,8 +4,15 @@ import { getUserByEmail, createUser, getNextRegistrationId } from '@/lib/db';
 import { sendRegistrationConfirmationEmail } from '@/lib/email';
 import { signToken } from '@/lib/auth';
 import { appendRegistrationToSheet } from '@/lib/sheets';
+import { REGISTRATION_OPEN } from '@/lib/registrationConfig';
 
 export async function POST(req: NextRequest) {
+    if (!REGISTRATION_OPEN) {
+        return NextResponse.json(
+            { error: 'Registrations are currently closed.' },
+            { status: 403 }
+        );
+    }
     try {
         const {
             name, email, phone, college, gender,
