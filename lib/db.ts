@@ -98,14 +98,14 @@ export async function getUsersByCollege(college: string): Promise<IUser[]> {
     await connectDB();
     // Case-insensitive partial match for robustness
     return User.find({ college: { $regex: new RegExp(college, 'i') } })
-        .select('registrationId name college gender')
+        .select('registrationId name college gender adminVerified')
         .lean<IUser[]>();
 }
 
 export async function getUsersByIds(ids: string[]): Promise<IUser[]> {
     await connectDB();
     return User.find({ registrationId: { $in: ids } })
-        .select('registrationId name email phone college gender')
+        .select('registrationId name email phone college gender adminVerified')
         .lean<IUser[]>();
 }
 
