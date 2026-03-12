@@ -73,19 +73,9 @@ export async function POST(req: NextRequest) {
         sendRegistrationConfirmationEmail(email, name, registrationId, password)
             .catch((err) => console.error('Failed to send confirmation email:', err));
 
-        const token = signToken({ registrationId, email: email.toLowerCase(), name: name.trim() });
-
         const response = NextResponse.json({
-            message: 'Registration successful',
+            message: 'Registration successful. Pending admin approval.',
             registrationId,
-        });
-
-        response.cookies.set('prithvi_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60,
-            path: '/',
         });
 
         return response;

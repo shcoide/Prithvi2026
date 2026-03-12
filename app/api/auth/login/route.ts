@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
+        if (!user.adminVerified) {
+            return NextResponse.json({ error: 'Your account is pending admin approval. You cannot login yet.' }, { status: 403 });
+        }
+
         const token = signToken({
             registrationId: user.registrationId,
             email: user.email,

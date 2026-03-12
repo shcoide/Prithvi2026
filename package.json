@@ -20,7 +20,8 @@
     "nodemailer": "^8.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "uploadthing": "^7.7.4"
+    "uploadthing": "^7.7.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -29,6 +30,8 @@
     "@types/nodemailer": "^7.0.10",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.3.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
