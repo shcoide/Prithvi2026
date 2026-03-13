@@ -117,6 +117,42 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* GSA SECTION */}
+      <section className="about-section">
+        <div className="about-card">
+          <div className="about-image">
+            <a href="https://www.geosociety.org/" target="_blank" rel="noopener noreferrer">
+              <Image
+                src="/assets/images/logos/GSA.svg"
+                alt="Geological Society of America"
+                width={600}
+                height={320}
+                style={{
+                  width: '100%',
+                  height: '320px',
+                  objectFit: 'contain',
+                  backgroundColor: 'white',
+                  borderRadius: '0px 0px 14px 14px',
+                  padding: '1.5rem'
+                }}
+              />
+            </a>
+          </div>
+          <div className="about-text">
+            <h2>Geological Society of America (GSA)</h2>
+            <p style={{ color: '#4fd1ff', fontWeight: '600', marginBottom: '16px' }}>
+              Prithvi is proudly co-hosted by the Geological Society of America.
+            </p>
+            <p>
+              The Geological Society of America (GSA) is a global, non-profit scientific society founded in 1888, dedicated to advancing geosciences through research, education, and professional development. Headquartered in Boulder, Colorado, it supports over 24,000 members worldwide by publishing journals (like Geology), hosting meetings, and funding research.
+            </p>
+            <p>
+              For more information, please visit their website: <a href="https://www.geosociety.org/" target="_blank" rel="noopener noreferrer" style={{ color: '#4fd1ff', textDecoration: 'underline' }}>geosociety.org</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* SPONSORS */}
       <section className="sponsors">
         <h1>Previous Sponsors</h1>
