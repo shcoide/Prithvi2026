@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { getRegistrationsByEvent, getRegistrationsByEventAndCollege, getUserByRegistrationId } from '@/lib/db';
 
-export async function GET(req: NextRequest, { params }: { params: { eventId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ eventId: string }> }) {
     try {
         const token = req.cookies.get('prithvi_token')?.value;
         if (!token) return NextResponse.json({ error: 'Login required' }, { status: 401 });

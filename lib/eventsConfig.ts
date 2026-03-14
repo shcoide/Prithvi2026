@@ -37,18 +37,6 @@ export const EVENTS: EventConfig[] = [
         imageUrl: '/assets/eventImages/GEOPIXELS.jpg',
     },
     {
-        id: 'geoforensics',
-        name: 'GEOFORENSICS',
-        category: 'Competition',
-        date: 'To be announced',
-        description: 'A forensic geological event. Click on the image above to read the comprehensive rulebook.',
-        maxTeamsPerCollege: 2,
-        minTeamSize: 1,
-        maxTeamSize: 3,
-        ruleBookUrl: '/assets/eventsRules/GEOFORENSICS.pdf',
-        imageUrl: '/assets/eventImages/GEOFORENSICS.jpg',
-    },
-    {
         id: 'litholaugh',
         name: 'LITHOLAUGH',
         category: 'Competition',

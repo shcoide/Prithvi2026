@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { EVENTS } from '@/lib/eventsConfig';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface AdminUser {
@@ -283,9 +284,14 @@ function EventsDashboard({ onToast }: { onToast: (m: string) => void }) {
         return true;
     });
 
-    const byEvent = EVENTS_ORDER.map(ev => ({
+    const allEventIds = Array.from(new Set([
+        ...EVENTS.map(ev => ev.id),
+        ...registrations.map(r => r.eventId)
+    ]));
+
+    const byEvent = allEventIds.map(ev => ({
         eventId: ev,
-        eventName: filtered.find(r => r.eventId === ev)?.eventName || ev,
+        eventName: filtered.find(r => r.eventId === ev)?.eventName || EVENTS.find(e => e.id === ev)?.name || ev,
         teams: filtered.filter(r => r.eventId === ev),
     })).filter(g => g.teams.length > 0);
 
@@ -294,9 +300,11 @@ function EventsDashboard({ onToast }: { onToast: (m: string) => void }) {
             <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
                 <select value={eventFilter} onChange={e => setEventFilter(e.target.value)} style={s.filterSelect}>
                     <option value="all">All Events</option>
-                    {eventNames.map(en => {
-                        const r = registrations.find(x => x.eventName === en);
-                        return <option key={r?.eventId} value={r?.eventId}>{en}</option>;
+                    {allEventIds.map(evId => {
+                        const evt = EVENTS.find(e => e.id === evId);
+                        const r = registrations.find(x => x.eventId === evId);
+                        const name = evt?.name || r?.eventName || evId;
+                        return <option key={evId} value={evId}>{name}</option>;
                     })}
                 </select>
                 <input placeholder="Search team / college / participant ID…" value={search} onChange={e => setSearch(e.target.value)} style={{ ...s.searchInput, flex: 1, borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)' }} />
@@ -345,8 +353,6 @@ function EventsDashboard({ onToast }: { onToast: (m: string) => void }) {
         </div>
     );
 }
-
-const EVENTS_ORDER = ['geoquiz', 'rock-mineral', 'seismic-workshop', 'remote-sensing', 'research-paper', 'geoart', 'guest-lecture'];
 
 function TeamsTable({ teams, onParticipantClick }: { teams: EventReg[]; onParticipantClick: (p: ParticipantDetail) => void }) {
     return (
