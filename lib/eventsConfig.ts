@@ -42,11 +42,23 @@ export const EVENTS: EventConfig[] = [
         category: 'Competition',
         date: 'To be announced',
         description: 'A forensic geological event. Click on the image above to read the comprehensive rulebook.',
-        maxTeamsPerCollege: 2, // Unlimited personal registrations per college
+        maxTeamsPerCollege: 2,
         minTeamSize: 1,
-        maxTeamSize: 3, // Team event
+        maxTeamSize: 3,
         ruleBookUrl: '/assets/eventsRules/GEOFORENSICS.pdf',
         imageUrl: '/assets/eventImages/GEOFORENSICS.jpg',
+    },
+    {
+        id: 'litholaugh',
+        name: 'LITHOLAUGH',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'A humorous geological meme event celebrating field struggles and academic survival through creativity and wit.',
+        maxTeamsPerCollege: 9999, // Unlimited personal registrations per college
+        minTeamSize: 1,
+        maxTeamSize: 1, // Individual event
+        ruleBookUrl: '/assets/eventsRules/LITHOLAUGH.pdf',
+        imageUrl: '/assets/eventImages/LITHOLAUGH.jpg',
     },
 ];
 
