@@ -9,6 +9,7 @@ export interface EventConfig {
     maxTeamSize: number;
     ruleBookUrl: string;
     imageUrl: string;
+    registrationClosed?: boolean;
 }
 
 export const EVENTS: EventConfig[] = [
@@ -23,6 +24,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 4,
         ruleBookUrl: '/assets/eventsRules/GEOINSIGHT.pdf',
         imageUrl: '/assets/eventImages/GEOINSIGHT.jpg',
+        registrationClosed: true,
     },
     {
         id: 'geopixels',
@@ -35,6 +37,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 1, // Individual event
         ruleBookUrl: '/assets/eventsRules/GEOPIXELS.pdf',
         imageUrl: '/assets/eventImages/GEOPIXELS.jpg',
+        registrationClosed: false,
     },
     {
         id: 'litholaugh',
@@ -47,6 +50,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 1, // Individual event
         ruleBookUrl: '/assets/eventsRules/LITHOLAUGH.pdf',
         imageUrl: '/assets/eventImages/LITHOLAUGH.jpg',
+        registrationClosed: false,
     },
     {
         id: 'grab-a-fault',
@@ -59,6 +63,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 5, // 3-5 members per team
         ruleBookUrl: '/assets/eventsRules/GRAB-A-FAULT.pdf',
         imageUrl: '/assets/eventImages/GRAB-A-FAULT.png',
+        registrationClosed: false,
     },
 ];
 

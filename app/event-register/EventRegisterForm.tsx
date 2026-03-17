@@ -275,8 +275,20 @@ export default function EventRegisterForm() {
                     {error && <div style={s.errorBox}>{error}</div>}
                     {success && <div style={s.successBox}>{success}</div>}
 
-                    <button type="submit" style={{ ...s.submitBtn, ...(submitting || (!!alreadyRegistered && !editingRegId) ? { opacity: 0.5, cursor: 'not-allowed' } : {}) }} disabled={submitting || (!!alreadyRegistered && !editingRegId)}>
-                        {submitting ? (editingRegId ? 'Updating…' : 'Registering…') : (editingRegId ? '💾 Update Registration' : alreadyRegistered ? 'Already Registered' : '✅ Submit Registration')}
+                    <button
+                        type="submit"
+                        style={{
+                            ...s.submitBtn,
+                            ...(submitting || (!!alreadyRegistered && !editingRegId) || selectedEvent?.registrationClosed ? { opacity: 0.5, cursor: 'not-allowed' } : {})
+                        }}
+                        disabled={submitting || (!!alreadyRegistered && !editingRegId) || !!selectedEvent?.registrationClosed}
+                    >
+                        {selectedEvent?.registrationClosed
+                            ? '🚫 Registration Closed'
+                            : submitting
+                                ? (editingRegId ? 'Updating…' : 'Registering…')
+                                : (editingRegId ? '💾 Update Registration' : alreadyRegistered ? 'Already Registered' : '✅ Submit Registration')
+                        }
                     </button>
                 </form>
 

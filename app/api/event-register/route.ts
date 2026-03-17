@@ -26,6 +26,11 @@ export async function POST(req: NextRequest) {
         const eventConfig = getEventById(eventId);
         if (!eventConfig) return NextResponse.json({ error: 'Invalid event' }, { status: 400 });
 
+        // Check if registration is closed
+        if (eventConfig.registrationClosed) {
+            return NextResponse.json({ error: 'Registration for this event is closed.' }, { status: 403 });
+        }
+
         // Team size check
         if (participantIds.length < eventConfig.minTeamSize || participantIds.length > eventConfig.maxTeamSize) {
             return NextResponse.json({
@@ -106,6 +111,11 @@ export async function PUT(req: NextRequest) {
 
         const eventConfig = getEventById(eventId);
         if (!eventConfig) return NextResponse.json({ error: 'Invalid event' }, { status: 400 });
+
+        // Check if registration is closed
+        if (eventConfig.registrationClosed) {
+            return NextResponse.json({ error: 'Registration for this event is closed.' }, { status: 403 });
+        }
 
         // Team size check
         if (participantIds.length < eventConfig.minTeamSize || participantIds.length > eventConfig.maxTeamSize) {

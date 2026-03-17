@@ -50,13 +50,23 @@ export default function EventsPage() {
                             </div>
                             <p>{event.description}</p>
                             {!loading && (
-                                <button
-                                    className="btn"
-                                    style={{ marginTop: '24px', fontSize: '15px', padding: '12px 24px' }}
-                                    onClick={() => handleRegister(event.id)}
-                                >
-                                    {user ? '📋 Register for Event' : '🔐 Login to Register'}
-                                </button>
+                                event.registrationClosed ? (
+                                    <button
+                                        className="btn"
+                                        style={{ marginTop: '24px', fontSize: '15px', padding: '12px 24px', background: '#334', cursor: 'not-allowed', color: '#889', border: '1px solid #445' }}
+                                        disabled
+                                    >
+                                        🚫 Registration Closed
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="btn"
+                                        style={{ marginTop: '24px', fontSize: '15px', padding: '12px 24px' }}
+                                        onClick={() => handleRegister(event.id)}
+                                    >
+                                        {user ? '📋 Register for Event' : '🔐 Login to Register'}
+                                    </button>
+                                )
                             )}
                         </div>
                     </div>
