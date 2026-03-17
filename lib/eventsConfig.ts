@@ -48,6 +48,18 @@ export const EVENTS: EventConfig[] = [
         ruleBookUrl: '/assets/eventsRules/LITHOLAUGH.pdf',
         imageUrl: '/assets/eventImages/LITHOLAUGH.jpg',
     },
+    {
+        id: 'grab-a-fault',
+        name: 'GRAB-A-FAULT',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'Unleash your inner orator and make your voice heard in our flagship debate competition.',
+        maxTeamsPerCollege: 1, // 1 team per college
+        minTeamSize: 3,
+        maxTeamSize: 5, // 3-5 members per team
+        ruleBookUrl: '/assets/eventsRules/GRAB-A-FAULT.pdf',
+        imageUrl: '/assets/eventImages/GRAB-A-FAULT.png',
+    },
 ];
 
 export function getEventById(id: string): EventConfig | undefined {
