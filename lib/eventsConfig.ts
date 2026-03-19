@@ -65,6 +65,19 @@ export const EVENTS: EventConfig[] = [
         imageUrl: '/assets/eventImages/GRAB-A-FAULT.png',
         registrationClosed: false,
     },
+    {
+        id: 'geosciencexhackathon',
+        name: 'GEOSCIENCExHACKATHON',
+        category: 'Hackathon',
+        date: 'To be announced',
+        description: 'Build self-supervised models to automate 3D seismic fault detection. Access real datasets and GPU cloud infrastructure. In partnership with Rezlytix',
+        maxTeamsPerCollege: 9999, // No cap per college
+        minTeamSize: 1,
+        maxTeamSize: 3, // 1-3 members per team
+        ruleBookUrl: '/assets/eventsRules/GEOSCIENCExHACKATHON.pdf',
+        imageUrl: '/assets/eventImages/GEOSCIENCExHACKATHON.jpeg',
+        registrationClosed: false,
+    },
 ];
 
 export function getEventById(id: string): EventConfig | undefined {
