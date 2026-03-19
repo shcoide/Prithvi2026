@@ -37,7 +37,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 1, // Individual event
         ruleBookUrl: '/assets/eventsRules/GEOPIXELS.pdf',
         imageUrl: '/assets/eventImages/GEOPIXELS.jpg',
-        registrationClosed: false,
+        registrationClosed: true,
     },
     {
         id: 'litholaugh',
@@ -50,7 +50,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 1, // Individual event
         ruleBookUrl: '/assets/eventsRules/LITHOLAUGH.pdf',
         imageUrl: '/assets/eventImages/LITHOLAUGH.jpg',
-        registrationClosed: false,
+        registrationClosed: true,
     },
     {
         id: 'grab-a-fault',
