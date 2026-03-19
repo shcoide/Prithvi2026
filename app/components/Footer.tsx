@@ -36,8 +36,8 @@ export default function Footer() {
                     <p>📍 IIT Kharagpur, West Bengal</p>
                 </div>
             </div>
-
             <div className="footer-bottom">
+                Registration fees is NON-REFUNDABLE<br/>
                 © Prithvi 2026 · Department of Geology &amp; Geophysics, IIT Kharagpur
             </div>
         </footer>
