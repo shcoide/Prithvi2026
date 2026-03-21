@@ -79,12 +79,20 @@ export default function EventRegisterForm() {
     useEffect(() => { if (selectedEventId) loadCollegeParticipants(selectedEventId); }, [loadCollegeParticipants, selectedEventId]);
     useEffect(() => { if (selectedEventId && !editingRegId) loadTeamData(selectedEventId); }, [selectedEventId, loadTeamData, editingRegId]);
 
+    const selectedEvent = EVENTS.find((e) => e.id === selectedEventId);
+
+    // Safety redirect for external-only events (e.g., Unstop)
+    useEffect(() => {
+        if (selectedEvent?.externalRegistrationUrl) {
+            window.location.href = selectedEvent.externalRegistrationUrl;
+        }
+    }, [selectedEvent]);
+
     function toggleParticipant(id: string) {
         if (id === user?.registrationId) return;
         setSelectedParticipants((prev) => prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]);
     }
 
-    const selectedEvent = EVENTS.find((e) => e.id === selectedEventId);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();

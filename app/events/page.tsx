@@ -58,6 +58,23 @@ export default function EventsPage() {
                                     >
                                         🚫 Registration Closed
                                     </button>
+                                ) : event.externalRegistrationUrl ? (
+                                    <a
+                                        href={event.externalRegistrationUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn"
+                                        style={{
+                                            marginTop: '24px',
+                                            fontSize: '15px',
+                                            padding: '12px 24px',
+                                            display: 'inline-block',
+                                            textDecoration: 'none',
+                                            textAlign: 'center'
+                                        }}
+                                    >
+                                        🚀 Register on Unstop
+                                    </a>
                                 ) : (
                                     <button
                                         className="btn"

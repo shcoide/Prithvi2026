@@ -10,6 +10,7 @@ export interface EventConfig {
     ruleBookUrl: string;
     imageUrl: string;
     registrationClosed?: boolean;
+    externalRegistrationUrl?: string;
 }
 
 export const EVENTS: EventConfig[] = [
@@ -77,6 +78,20 @@ export const EVENTS: EventConfig[] = [
         ruleBookUrl: '/assets/eventsRules/GEOSCIENCExHACKATHON.pdf',
         imageUrl: '/assets/eventImages/GEOSCIENCExHACKATHON.jpeg',
         registrationClosed: false,
+    },
+    {
+        id: 'stratax',
+        name: 'STRATAX',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'An exciting challenge testing your stratigraphic knowledge and analytical skills. Click on register to go on UNSTOP and register there.',
+        maxTeamsPerCollege: 9999,
+        minTeamSize: 1,
+        maxTeamSize: 1,
+        ruleBookUrl: '/assets/eventsRules/STRATAX.pdf',
+        imageUrl: '/assets/eventImages/STRATAX.jpg',
+        registrationClosed: false,
+        externalRegistrationUrl: 'https://unstop.com/o/cRsWE3V?lb=qmqpJ9rz&utm_medium=Share&utm_source=competitions&utm_campaign',
     },
 ];
 
