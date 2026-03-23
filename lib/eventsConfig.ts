@@ -93,6 +93,19 @@ export const EVENTS: EventConfig[] = [
         registrationClosed: false,
         externalRegistrationUrl: 'https://unstop.com/o/cRsWE3V?lb=qmqpJ9rz&utm_medium=Share&utm_source=competitions&utm_campaign',
     },
+    {
+        id: 'mantlemind',
+        name: 'MANTLE MIND',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'A thrilling two-round geoscience showdown. Battle through unconventional questions and logical challenges in the Prelims to claim your spot in the Finals.',
+        maxTeamsPerCollege: 2, // 2 team cap per college
+        minTeamSize: 1,
+        maxTeamSize: 4, // 1-4 members per team
+        ruleBookUrl: '/assets/eventsRules/MANTLEMIND.pdf',
+        imageUrl: '/assets/eventImages/MANTLEMIND.jpeg',
+        registrationClosed: false,
+    },
 ];
 
 export function getEventById(id: string): EventConfig | undefined {
