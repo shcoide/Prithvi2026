@@ -106,6 +106,19 @@ export const EVENTS: EventConfig[] = [
         imageUrl: '/assets/eventImages/MANTLEMIND.jpeg',
         registrationClosed: false,
     },
+    {
+        id: 'geoforensics',
+        name: 'GEOFORENSICS',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'Every mineral, rock, and fossil holds a story, a secret, and a unique fingerprint. Join us for Geoforensics and learn to crack the cases hidden in stone.',
+        maxTeamsPerCollege: 2, // 2 team cap per college
+        minTeamSize: 1,
+        maxTeamSize: 4, // 1-4 members per team
+        ruleBookUrl: '/assets/eventsRules/GEOFORENSICS.pdf',
+        imageUrl: '/assets/eventImages/GEOFORENSICS.jpeg',
+        registrationClosed: false,
+    },
 ];
 
 export function getEventById(id: string): EventConfig | undefined {
