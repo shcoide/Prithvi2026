@@ -119,6 +119,19 @@ export const EVENTS: EventConfig[] = [
         imageUrl: '/assets/eventImages/GEOFORENSICS.jpeg',
         registrationClosed: false,
     },
+    {
+        id: 'strataseek',
+        name: 'STRATA SEEK',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'Not all who wander are lost... Some of us are just looking for the next clue. The Hunt Is On. Join us for the adventure...',
+        maxTeamsPerCollege: 1, // 1 team cap per college
+        minTeamSize: 1,
+        maxTeamSize: 5, // 1-5 members per team
+        ruleBookUrl: '/assets/eventsRules/STRATASEEK.pdf',
+        imageUrl: '/assets/eventImages/STRATASEEK.jpeg',
+        registrationClosed: false,
+    },
 ];
 
 export function getEventById(id: string): EventConfig | undefined {
