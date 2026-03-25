@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { EVENTS } from '@/lib/eventsConfig';
+import { Html5Qrcode } from 'html5-qrcode';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface AdminUser {
@@ -19,6 +20,11 @@ interface AdminUser {
     paymentScreenshot: string;
     screenshotUrl: string | null;
     registeredAt: string;
+    // ✅ NEW
+    PA: boolean;
+    DinnerTaken: boolean;
+    Certificate: boolean;
+    hall_alloted: string;
 }
 
 interface ParticipantDetail {
@@ -43,7 +49,7 @@ interface EventReg {
 }
 
 type FilterStatus = 'all' | 'pending' | 'approved' | 'rejected';
-type Tab = 'participants' | 'events';
+type Tab = 'participants' | 'events' | 'scanner';
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
@@ -53,7 +59,7 @@ export default function AdminPage() {
     const [logging, setLogging] = useState(false);
 
     useEffect(() => {
-        fetch('/api/addmin/users').then((r) => { if (r.ok) setAuthed(true); }).catch(() => { });
+        fetch('/api/addmin/usersv2').then((r) => { if (r.ok) setAuthed(true); }).catch(() => { });
     }, []);
 
     async function handleLogin(e: React.FormEvent) {
@@ -108,13 +114,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 </div>
                 <div style={s.headerRight}>
                     <button onClick={() => setTab('participants')} style={{ ...s.tabBtn, ...(tab === 'participants' ? s.tabBtnActive : {}) }}>👥 Participants</button>
+                    <button onClick={() => setTab('scanner')} style={{ ...s.tabBtn, ...(tab === 'scanner' ? s.tabBtnActive : {}) }}>
+                        📷 Scanner
+                    </button>
                     <button onClick={() => setTab('events')} style={{ ...s.tabBtn, ...(tab === 'events' ? s.tabBtnActive : {}) }}>🏆 Event Registrations</button>
                     <button onClick={() => window.open('/api/addmin/export', '_blank')} style={s.exportBtn}>📊 Export Excel</button>
                     <button onClick={logout} style={s.logoutBtn}>Logout</button>
                 </div>
             </header>
 
-            {tab === 'participants' ? <ParticipantsDashboard onToast={showToast} onLogout={onLogout} /> : <EventsDashboard onToast={showToast} />}
+            {tab === 'participants' && <ParticipantsDashboard onToast={showToast} onLogout={onLogout} />}
+            {tab === 'events' && <EventsDashboard onToast={showToast} />}
+            {tab === 'scanner' && <ScannerDashboard onToast={showToast} />}
             {toast && <div style={s.toast}>{toast}</div>}
         </div>
     );
@@ -130,11 +141,13 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
     const [note, setNote] = useState('');
     const [saving, setSaving] = useState(false);
     const [toggling, setToggling] = useState(false);
-
+    const [filterPA, setFilterPA] = useState(false);
+    const [filterDinner, setFilterDinner] = useState(false);
+    const [filterCertificate, setFilterCertificate] = useState(false);
     const loadUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/addmin/users');
+            const res = await fetch('/api/addmin/usersv2');
             if (res.status === 401) { onLogout(); return; }
             const data = await res.json();
             setUsers(data.users || []);
@@ -173,12 +186,28 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
 
     const displayed = users.filter((u) => {
         if (filter !== 'all' && u.paymentStatus !== filter) return false;
-        if (search) { const q = search.toLowerCase(); return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.registrationId.toLowerCase().includes(q) || u.college.toLowerCase().includes(q); }
+
+        if (filterPA && !u.PA) return false;
+        if (filterDinner && !u.DinnerTaken) return false;
+        if (filterCertificate && !u.Certificate) return false;
+
+        if (search) {
+            const q = search.toLowerCase();
+            return (
+                u.name.toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q) ||
+                u.registrationId.toLowerCase().includes(q) ||
+                u.college.toLowerCase().includes(q)
+            );
+        }
+
         return true;
     });
     const counts = { all: users.length, pending: users.filter(u => u.paymentStatus === 'pending').length, approved: users.filter(u => u.paymentStatus === 'approved').length, rejected: users.filter(u => u.paymentStatus === 'rejected').length };
     const verifiedCount = users.filter(u => u.adminVerified).length;
-
+    function uBool(v: boolean) {
+        return v ? 'true' : 'false';
+    }
     return (
         <div style={s.dashLayout}>
             <aside style={s.sidebar}>
@@ -192,6 +221,20 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
                     ))}
                 </div>
                 <input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} style={s.searchInput} />
+                <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label>
+                        <input type="checkbox" checked={filterPA} onChange={(e) => setFilterPA(e.target.checked)} />
+                        {' '}PA
+                    </label>
+                    <label>
+                        <input type="checkbox" checked={filterDinner} onChange={(e) => setFilterDinner(e.target.checked)} />
+                        {' '}Dinner Taken
+                    </label>
+                    <label>
+                        <input type="checkbox" checked={filterCertificate} onChange={(e) => setFilterCertificate(e.target.checked)} />
+                        {' '}Certificate
+                    </label>
+                </div>
                 <div style={s.userList}>
                     {loading ? <div style={s.loadingText}>Loading…</div> : displayed.length === 0 ? <div style={s.loadingText}>No results</div> :
                         displayed.map((u) => (
@@ -206,6 +249,9 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
                                 <div style={s.userRowId}>{u.registrationId}</div>
                                 <div style={s.userRowEmail}>{u.email}</div>
                                 <div style={s.userRowCollege}>{u.college}</div>
+                                <div style={{ fontSize: 11, color: '#888' }}>
+                                    PA: {u.PA ? 'true' : 'false'} | Dinner: {u.DinnerTaken ? 'true' : 'false'} | Cert: {u.Certificate ? 'true' : 'false'}
+                                </div>
                             </button>
                         ))
                     }
@@ -221,7 +267,12 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
                             <span style={{ ...s.statusBadgeLg, ...(selected.paymentStatus === 'approved' ? s.badgeApproved : selected.paymentStatus === 'rejected' ? s.badgeRejected : s.badgePending) }}>{selected.paymentStatus.toUpperCase()}</span>
                         </div>
                         <div style={s.infoGrid}>
-                            {[['📧 Email', selected.email], ['📞 Phone', selected.phone], ['🏫 College', selected.college], ['⚧ Gender', selected.gender], ['📅 Registered', new Date(selected.registeredAt).toLocaleString('en-IN')], ['✉️ Email verified', selected.emailVerified ? '✅ Yes' : '❌ No']].map(([label, value]) => (
+                            {[['📧 Email', selected.email], ['📞 Phone', selected.phone], ['🏫 College', selected.college],
+                            ['⚧ Gender', selected.gender], ['📅 Registered', new Date(selected.registeredAt).toLocaleString('en-IN')],
+                            ['✉️ Email verified', selected.emailVerified ? '✅ Yes' : '❌ No'], ['🎫 PA', uBool(selected.PA)],
+                            ['🍽 Dinner', uBool(selected.DinnerTaken)],
+                            ['📜 Certificate', uBool(selected.Certificate)],
+                            ['🏠 Hall Alloted', selected.hall_alloted || ''],].map(([label, value]) => (
                                 <div key={label} style={s.infoItem}><div style={s.infoLabel}>{label}</div><div style={s.infoValue}>{value}</div></div>
                             ))}
                         </div>
@@ -257,6 +308,347 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
         </div>
     );
 }
+
+// ----Scanner Dashboard-----
+
+function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
+    const [scannedId, setScannedId] = useState('');
+    const [user, setUser] = useState<any>(null);
+
+    const [PA, setPA] = useState(false);
+    const [DinnerTaken, setDinnerTaken] = useState(false);
+    const [Certificate, setCertificate] = useState(false);
+    const [hall, setHall] = useState('');
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const readerRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (scannerRef.current) return;
+        let isMounted = true;
+        if (!readerRef.current) return;
+
+        const html5QrCode = new Html5Qrcode(readerRef.current.id);
+        scannerRef.current = html5QrCode;
+
+        const startScanner = async () => {
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                const backCamera = devices.find(device =>
+                    /back|rear|environment/i.test(device.label)
+                );
+                if (!isMounted) return;
+
+                if (!devices || devices.length === 0) {
+                    onToast("No camera found");
+                    return;
+                }
+                const cameraId = backCamera ? backCamera.id : devices[0].id;
+
+                if (!document.getElementById("reader")) return;
+                console.log("Calling html5QrCode.start()");
+                await html5QrCode.start(
+                    cameraId,
+                    {
+                        fps: 20
+                    },
+                    (decodedText) => {
+                        console.log("SCAN SUCCESS:", decodedText);
+                        onScanSuccess(decodedText);
+                    },
+                    (err) => { }
+                );
+                console.log("Scanner started successfully");
+            } catch (err: any) {
+                console.error("Scanner error:", err);
+
+                if (err?.name === "NotAllowedError") {
+                    onToast("❌ Camera permission denied. Please allow camera access.");
+                } else if (err?.name === "NotFoundError") {
+                    onToast("❌ No camera found on this device.");
+                } else {
+                    onToast("❌ Camera error");
+                }
+            }
+        };
+
+        const timeout = setTimeout(startScanner, 800);
+
+        return () => {
+            const qr = scannerRef.current;
+            if (!qr) return;
+
+            try {
+                if ((qr as any).isScanning) {
+                    qr.stop().catch(() => { });
+                }
+            } catch { }
+
+            try {
+                qr.clear();
+            } catch { }
+        };
+    }, []);
+
+    const onScanSuccess = async (decodedText: string) => {
+        if (!decodedText) return;
+        console.log(decodedText);
+        // prevent duplicate scans
+        if (scannedId === decodedText) return;
+
+        setScannedId(decodedText);
+        console.log("SCAN SUCCESS TRIGGERED:", decodedText);
+        // pause scanner (DO NOT stop)
+        if (scannerRef.current) {
+            try {
+                await scannerRef.current.pause();
+            } catch { }
+        }
+
+        try {
+            const res = await fetch(`/api/addmin/usersv2/${decodedText}`);
+
+            if (!res.ok) {
+                onToast("User not found");
+                return;
+            }
+
+            const data = await res.json();
+
+            setUser(data.user);
+            setPA(data.user.PA);
+            setDinnerTaken(data.user.DinnerTaken);
+            setCertificate(data.user.Certificate);
+            setHall(data.user.hall_alloted || '');
+
+        } catch (err) {
+            console.error(err);
+            onToast("Fetch error");
+        }
+    };
+
+    async function handleSave() {
+        const res = await fetch('/api/addmin/usersv2/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                registrationId: scannedId,
+                PA,
+                DinnerTaken,
+                Certificate,
+                hall_alloted: hall,
+            }),
+        });
+
+        if (!res.ok) {
+            onToast('Update failed');
+            return;
+        }
+
+        onToast('✅ Updated successfully');
+    }
+
+    async function handleNext() {
+        setUser(null);
+        setScannedId('');
+
+        if (scannerRef.current) {
+            try {
+                await scannerRef.current.resume();
+            } catch (e) {
+                console.log("Resume failed", e);
+            }
+        }
+    }
+    return (
+        <div
+            style={{
+                minHeight: "100vh",
+                background: "#050a19",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                padding: "32px 20px",
+                gap: 24,
+            }}
+        >
+            <div
+                style={{
+                    width: 420,
+                    height: 420,
+                    maxWidth: 420,
+                    maxHeight: 420,
+                    overflow: "hidden",
+                    borderRadius: 12,
+                    position: "relative",
+                }}
+            >
+                <div
+                    ref={readerRef}
+                    id="reader"
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                    }}
+                />
+            </div>
+
+            {user && (
+                <div
+                    style={{
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: 20,
+                        padding: "28px 24px",
+                        width: "100%",
+                        maxWidth: 420,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 14,
+                        color: "#fff",
+                    }}
+                >
+                    <h3
+                        style={{
+                            fontSize: 22,
+                            fontWeight: 700,
+                            margin: 0,
+                        }}
+                    >
+                        {user.name}
+                    </h3>
+
+                    <p
+                        style={{
+                            fontSize: 14,
+                            color: "#889",
+                            margin: 0,
+                        }}
+                    >
+                        {user.registrationId}
+                    </p>
+
+                    <label
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            fontSize: 14,
+                            color: "#ccd",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={PA}
+                            onChange={(e) => setPA(e.target.checked)}
+                        />
+                        PA
+                    </label>
+
+                    <label
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            fontSize: 14,
+                            color: "#ccd",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={DinnerTaken}
+                            onChange={(e) => setDinnerTaken(e.target.checked)}
+                        />
+                        Dinner Taken
+                    </label>
+
+                    <label
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            fontSize: 14,
+                            color: "#ccd",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={Certificate}
+                            onChange={(e) => setCertificate(e.target.checked)}
+                        />
+                        Certificate
+                    </label>
+
+                    <select
+                        value={hall}
+                        onChange={(e) => setHall(e.target.value)}
+                        style={{
+                            background: "rgba(255,255,255,0.07)",
+                            border: "1px solid rgba(255,255,255,0.15)",
+                            borderRadius: 10,
+                            color: "#fff",
+                            padding: "12px 14px",
+                            fontSize: 14,
+                            outline: "none",
+                        }}
+                    >
+                        <option value="">Select Hall</option>
+                        <option value="Hall A">Hall A</option>
+                        <option value="Hall B">Hall B</option>
+                        <option value="Hall C">Hall C</option>
+                    </select>
+
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: 12,
+                            marginTop: 10,
+                        }}
+                    >
+                        <button
+                            onClick={handleSave}
+                            style={{
+                                flex: 1,
+                                background: "linear-gradient(135deg,#4fd1ff,#7c3aed)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 10,
+                                padding: "12px 16px",
+                                fontSize: 14,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                            }}
+                        >
+                            Save
+                        </button>
+
+                        <button
+                            onClick={handleNext}
+                            style={{
+                                flex: 1,
+                                background: "rgba(255,255,255,0.08)",
+                                color: "#fff",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                                borderRadius: 10,
+                                padding: "12px 16px",
+                                fontSize: 14,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                            }}
+                        >
+                            Scan Next
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 
 // ── Events Dashboard ──────────────────────────────────────────────────────────
 function EventsDashboard({ onToast }: { onToast: (m: string) => void }) {
@@ -485,4 +877,5 @@ const s: Record<string, React.CSSProperties> = {
     modalId: { color: '#4fd1ff', fontSize: 13, fontWeight: 700, letterSpacing: 1 },
     modalName: { color: '#fff', fontSize: 22, fontWeight: 700, marginTop: 4 },
     modalClose: { background: 'rgba(255,255,255,0.08)', border: 'none', color: '#ccc', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+
 };

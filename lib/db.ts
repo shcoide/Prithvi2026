@@ -36,9 +36,31 @@ export interface IEventRegistration extends Document {
     registeredAt: Date;
 }
 
+export interface IUserV2 extends Document {
+    registrationId: string;
+    name: string;
+    email: string;
+    phone: string;
+    college: string;
+    gender: string;
+    passwordHash: string;
+    emailVerified: boolean;
+    paymentVerified: boolean;
+    paymentScreenshot: string;
+    paymentStatus: 'pending' | 'approved' | 'rejected';
+    adminVerified: boolean;
+    adminNote: string;
+    registeredAt: string;
+
+    PA: boolean;
+    DinnerTaken: boolean;
+    Certificate: boolean;
+    hall_alloted: string;
+}
+
 // ─── SCHEMAS ──────────────────────────────────────────────────────────────────
 
-const UserSchema = new Schema<IUser>({
+const userSchemaDefinition = {
     registrationId: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
@@ -49,11 +71,17 @@ const UserSchema = new Schema<IUser>({
     emailVerified: { type: Boolean, default: false },
     paymentVerified: { type: Boolean, default: false },
     paymentScreenshot: { type: String, default: '' },
-    paymentStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'] as const,
+        default: 'pending' as const,
+    },
     adminVerified: { type: Boolean, default: false },
     adminNote: { type: String, default: '' },
     registeredAt: { type: String, required: true },
-});
+};
+
+const UserSchema = new Schema<IUser>(userSchemaDefinition);
 
 const EventRegistrationSchema = new Schema<IEventRegistration>({
     eventId: { type: String, required: true, index: true },
@@ -70,12 +98,26 @@ const CounterSchema = new Schema({
     value: { type: Number, default: 0 },
 });
 
+
+const UserV2Schema = new Schema<IUserV2>({
+    ...userSchemaDefinition,
+    PA: { type: Boolean, default: false },
+    DinnerTaken: { type: Boolean, default: false },
+    Certificate: { type: Boolean, default: false },
+    hall_alloted: { type: String, default: '' },
+});
+
 // ─── MODELS ───────────────────────────────────────────────────────────────────
 
 const User = (models.User as mongoose.Model<IUser>) || model<IUser>('User', UserSchema);
 const EventRegistration = (models.EventRegistration as mongoose.Model<IEventRegistration>) ||
     model<IEventRegistration>('EventRegistration', EventRegistrationSchema);
 const Counter = models.Counter || model('Counter', CounterSchema);
+
+const UserV2 =
+    (models.UserV2 as mongoose.Model<IUserV2>) ||
+    model<IUserV2>('UserV2', UserV2Schema);
+
 
 // ─── USER CRUD ────────────────────────────────────────────────────────────────
 
@@ -233,4 +275,62 @@ export async function isParticipantRegisteredForEvent(
 export async function getAllEventRegistrations(): Promise<IEventRegistration[]> {
     await connectDB();
     return EventRegistration.find({}).sort({ registeredAt: -1 }).lean<IEventRegistration[]>();
+}
+
+
+// ─────────────────────────────────────Migrate users to V2───────────────────────────────────────
+export async function migrateUsersToV2() {
+    await connectDB();
+
+    const users = await User.find({ adminVerified: true }).lean();
+
+    if (!users.length) {
+        console.log('No verified users found');
+        return;
+    }
+
+    const transformedUsers = users.map((u) => ({
+        ...u,
+        _id: new mongoose.Types.ObjectId(),
+        PA: false,
+        DinnerTaken: false,
+        Certificate: false,
+        hall_alloted: '',
+    }));
+
+    await UserV2.insertMany(transformedUsers);
+
+    console.log(`Migrated ${users.length} verified users to UserV2`);
+}
+
+export async function updateUserV2Fields(
+    registrationId: string,
+    data: {
+        PA: boolean;
+        DinnerTaken: boolean;
+        Certificate: boolean;
+        hall_alloted: string;
+    }
+): Promise<boolean> {
+    await connectDB();
+
+    const result = await UserV2.updateOne(
+        { registrationId },
+        { $set: data }
+    );
+
+    return result.modifiedCount > 0;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────
+export async function getAllUsersV2(): Promise<IUserV2[]> {
+    await connectDB();
+    return UserV2.find({}).sort({ registeredAt: -1 }).lean<IUserV2[]>();
+}
+
+export async function getUserV2ByRegistrationId(id: string): Promise<IUserV2 | null> {
+    await connectDB();
+    return UserV2.findOne({
+        registrationId: new RegExp(`^${id}$`, "i")
+    }).lean();
 }

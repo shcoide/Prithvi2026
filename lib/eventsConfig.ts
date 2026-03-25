@@ -90,7 +90,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 1,
         ruleBookUrl: '/assets/eventsRules/STRATAX.pdf',
         imageUrl: '/assets/eventImages/STRATAX.jpg',
-        registrationClosed: false,
+        registrationClosed: true,
         externalRegistrationUrl: 'https://unstop.com/o/cRsWE3V?lb=qmqpJ9rz&utm_medium=Share&utm_source=competitions&utm_campaign',
     },
 ];
