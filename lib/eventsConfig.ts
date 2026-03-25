@@ -93,6 +93,45 @@ export const EVENTS: EventConfig[] = [
         registrationClosed: true,
         externalRegistrationUrl: 'https://unstop.com/o/cRsWE3V?lb=qmqpJ9rz&utm_medium=Share&utm_source=competitions&utm_campaign',
     },
+    {
+        id: 'mantlemind',
+        name: 'MANTLE MIND',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'A thrilling two-round geoscience showdown. Battle through unconventional questions and logical challenges in the Prelims to claim your spot in the Finals.',
+        maxTeamsPerCollege: 2, // 2 team cap per college
+        minTeamSize: 1,
+        maxTeamSize: 4, // 1-4 members per team
+        ruleBookUrl: '/assets/eventsRules/MANTLEMIND.pdf',
+        imageUrl: '/assets/eventImages/MANTLEMIND.jpeg',
+        registrationClosed: false,
+    },
+    {
+        id: 'geoforensics',
+        name: 'GEOFORENSICS',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'Every mineral, rock, and fossil holds a story, a secret, and a unique fingerprint. Join us for Geoforensics and learn to crack the cases hidden in stone.',
+        maxTeamsPerCollege: 2, // 2 team cap per college
+        minTeamSize: 1,
+        maxTeamSize: 4, // 1-4 members per team
+        ruleBookUrl: '/assets/eventsRules/GEOFORENSICS.pdf',
+        imageUrl: '/assets/eventImages/GEOFORENSICS.jpeg',
+        registrationClosed: false,
+    },
+    {
+        id: 'strataseek',
+        name: 'STRATA SEEK',
+        category: 'Competition',
+        date: 'To be announced',
+        description: 'Not all who wander are lost... Some of us are just looking for the next clue. The Hunt Is On. Join us for the adventure...',
+        maxTeamsPerCollege: 1, // 1 team cap per college
+        minTeamSize: 1,
+        maxTeamSize: 5, // 1-5 members per team
+        ruleBookUrl: '/assets/eventsRules/STRATASEEK.pdf',
+        imageUrl: '/assets/eventImages/STRATASEEK.jpeg',
+        registrationClosed: false,
+    },
 ];
 
 export function getEventById(id: string): EventConfig | undefined {

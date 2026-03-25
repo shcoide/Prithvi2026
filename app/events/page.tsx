@@ -91,7 +91,7 @@ export default function EventsPage() {
 
                 <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '20px', padding: '10px' }}>
                     <h3 style={{ color: '#889', fontSize: '1.4rem', fontWeight: 500, fontStyle: 'italic', letterSpacing: '1px' }}>
-                        More events coming soon...
+                        No more events for now...
                     </h3>
                 </div>
             </section>
