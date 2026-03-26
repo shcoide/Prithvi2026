@@ -79,6 +79,11 @@ export default function Navbar() {
                         <button className="navbtn">Login</button>
                     </Link>
                 )}
+                {user && (
+                    <Link href="/profile" onClick={() => setMenuOpen(false)}>
+                        <button className="navbtn">Profile</button>
+                    </Link>
+                )}
             </div>
 
             <div className="nav-right-group">

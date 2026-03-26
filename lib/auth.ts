@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { NextRequest } from "next/server";
 
 const SECRET = process.env.JWT_SECRET || 'prithvi2026-fallback-secret';
 
@@ -18,4 +19,15 @@ export function verifyToken(token: string): JWTPayload | null {
     } catch {
         return null;
     }
+}
+
+export function verifyUserCookie(req: NextRequest) {
+    const token = req.cookies.get("prithvi_token")?.value; // ✅ FIXED
+
+    if (!token) return null;
+
+    const payload = verifyToken(token);
+    if (!payload) return null;
+
+    return payload.registrationId;
 }

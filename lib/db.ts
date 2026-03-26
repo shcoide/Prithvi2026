@@ -282,7 +282,7 @@ export async function getAllEventRegistrations(): Promise<IEventRegistration[]> 
 export async function migrateUsersToV2() {
     await connectDB();
 
-    const users = await User.find({ adminVerified: true }).lean();
+    const users = await UserV2.find({ adminVerified: true }).lean();
 
     if (!users.length) {
         console.log('No verified users found');
