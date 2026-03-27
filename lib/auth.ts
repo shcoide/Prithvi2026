@@ -21,8 +21,9 @@ export function verifyToken(token: string): JWTPayload | null {
     }
 }
 
-export function verifyUserCookie(req: NextRequest) {
-    const token = req.cookies.get("prithvi_token")?.value; // ✅ FIXED
+
+export function checkUserSession(req: NextRequest) {
+    const token = req.cookies.get("prithvi_token")?.value;
 
     if (!token) return null;
 
@@ -30,4 +31,5 @@ export function verifyUserCookie(req: NextRequest) {
     if (!payload) return null;
 
     return payload.registrationId;
+
 }

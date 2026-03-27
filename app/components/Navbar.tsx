@@ -41,11 +41,13 @@ export default function Navbar() {
         router.push('/');
     }
 
+    /* Commenting out QR generation logic
     useEffect(() => {
         if (user?.registrationId) {
             QRCode.toDataURL(user.registrationId).then(setQr);
         }
     }, [user]);
+    */
 
     return (
         <nav className="navbar">
@@ -79,11 +81,14 @@ export default function Navbar() {
                         <button className="navbtn">Login</button>
                     </Link>
                 )}
+                {/* Commenting out Profile Link in mobile menu
                 {user && (
                     <Link href="/profile" onClick={() => setMenuOpen(false)}>
                         <button className="navbtn">Profile</button>
                     </Link>
                 )}
+                */}
+
             </div>
 
             <div className="nav-right-group">
@@ -115,12 +120,13 @@ export default function Navbar() {
                                                 <div className="user-dropdown-email">{user.email}</div>
                                             </div>
                                         </div>
+                                        {/* Commenting out QR In Dropdown
                                         <div className='user-dropdown-second-section'>
-                                            {/* QR HERE */}
                                             <div style={{ marginTop: "10px", textAlign: "center" }}>
                                                 {qr && <img src={qr} width={120} height={120} />}
                                             </div>
                                         </div>
+                                        */}
                                         <div className="user-dropdown-divider" />
                                         <button className="user-dropdown-logout" onClick={handleLogout}>
                                             🚪 Sign Out

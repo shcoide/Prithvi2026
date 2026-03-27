@@ -375,6 +375,8 @@ function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
         const timeout = setTimeout(startScanner, 800);
 
         return () => {
+            clearTimeout(timeout);
+            isMounted = false;
             const qr = scannerRef.current;
             if (!qr) return;
 
@@ -410,6 +412,12 @@ function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
 
             if (!res.ok) {
                 onToast("User not found");
+                setScannedId('');
+                if (scannerRef.current) {
+                    try {
+                        await scannerRef.current.resume();
+                    } catch { }
+                }
                 return;
             }
 
