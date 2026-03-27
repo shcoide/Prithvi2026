@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from './AuthContext';
+import QRCode from "qrcode";
 
 const navLinks = [
     { href: '/', label: 'Home' },
@@ -21,6 +22,7 @@ export default function Navbar() {
     const router = useRouter();
     const { user, loading, logout } = useAuth();
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [qr, setQr] = useState("");
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -38,6 +40,12 @@ export default function Navbar() {
         setDropdownOpen(false);
         router.push('/');
     }
+
+    useEffect(() => {
+        if (user?.registrationId) {
+            QRCode.toDataURL(user.registrationId).then(setQr);
+        }
+    }, [user]);
 
     return (
         <nav className="navbar">
@@ -71,6 +79,11 @@ export default function Navbar() {
                         <button className="navbtn">Login</button>
                     </Link>
                 )}
+                {user && (
+                    <Link href="/profile" onClick={() => setMenuOpen(false)}>
+                        <button className="navbtn">Profile</button>
+                    </Link>
+                )}
             </div>
 
             <div className="nav-right-group">
@@ -100,6 +113,12 @@ export default function Navbar() {
                                                 <div className="user-dropdown-name">{user.name}</div>
                                                 <div className="user-dropdown-id">{user.registrationId}</div>
                                                 <div className="user-dropdown-email">{user.email}</div>
+                                            </div>
+                                        </div>
+                                        <div className='user-dropdown-second-section'>
+                                            {/* QR HERE */}
+                                            <div style={{ marginTop: "10px", textAlign: "center" }}>
+                                                {qr && <img src={qr} width={120} height={120} />}
                                             </div>
                                         </div>
                                         <div className="user-dropdown-divider" />

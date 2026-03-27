@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 const sponsors = Array.from({ length: 27 }, (_, i) => ({
     id: i + 1,
-    image: `/assets/images/sponsors/s${i + 1}.png`,
+    image: `/assets/images/sponsors/s${i + 1}.jpeg`,
     alt: `Sponsor ${i + 1}`,
 }));
 

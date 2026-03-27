@@ -10,9 +10,9 @@ interface Sponsor {
 
 async function getSponsors(): Promise<Sponsor[]> {
   // Hard-coded data — same as API route
-  return Array.from({ length: 27 }, (_, i) => ({
+  return Array.from({ length: 10 }, (_, i) => ({
     id: i + 1,
-    image: `/assets/images/sponsors/s${i + 1}.png`,
+    image: `/assets/images/sponsors/s${i + 1}.jpeg`,
     alt: `Sponsor ${i + 1}`,
   }));
 }
@@ -154,18 +154,65 @@ export default async function HomePage() {
       </section>
 
       {/* SPONSORS */}
-      <section className="sponsors">
-        <h1>Previous Sponsors</h1>
-        <div className="sponsor-grid">
+      {/* SPONSORS */}
+      <section
+        style={{
+          padding: "60px 20px",
+          background: "#050a19",
+          textAlign: "center",
+        }}
+      >
+        <h1
+          style={{
+            color: "#fff",
+            fontSize: 36,
+            fontWeight: 700,
+            marginBottom: 40,
+            letterSpacing: 1,
+          }}
+        >
+          Our Sponsors
+        </h1>
+
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: 40,
+            maxWidth: 1000,
+            margin: "0 auto",
+          }}
+        >
           {sponsors.map((sponsor) => (
-            <Image
+            <div
               key={sponsor.id}
-              src={sponsor.image}
-              alt={sponsor.alt}
-              width={120}
-              height={55}
-              style={{ maxHeight: '55px', width: 'auto', objectFit: 'contain' }}
-            />
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 16,
+                padding: "20px 30px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: 140,
+                minHeight: 80,
+                transition: "all 0.3s ease",
+              }}
+            >
+              <Image
+                src={sponsor.image}
+                alt={sponsor.alt}
+                width={120}
+                height={55}
+                style={{
+                  maxHeight: "55px",
+                  width: "auto",
+                  objectFit: "contain",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            </div>
           ))}
         </div>
       </section>
