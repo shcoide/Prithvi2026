@@ -10,7 +10,7 @@ interface Sponsor {
 
 async function getSponsors(): Promise<Sponsor[]> {
   // Hard-coded data — same as API route
-  return Array.from({ length: 10 }, (_, i) => ({
+  return Array.from({ length: 13 }, (_, i) => ({
     id: i + 1,
     image: `/assets/images/sponsors/s${i + 1}.jpeg`,
     alt: `Sponsor ${i + 1}`,
