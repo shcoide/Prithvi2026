@@ -64,7 +64,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 5, // 3-5 members per team
         ruleBookUrl: '/assets/eventsRules/GRAB-A-FAULT.pdf',
         imageUrl: '/assets/eventImages/GRAB-A-FAULT.png',
-        registrationClosed: true,
+        registrationClosed: false,
     },
     {
         id: 'geosciencexhackathon',
@@ -104,7 +104,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 4, // 1-4 members per team
         ruleBookUrl: '/assets/eventsRules/MANTLEMIND.pdf',
         imageUrl: '/assets/eventImages/MANTLEMIND.jpeg',
-        registrationClosed: true,
+        registrationClosed: false,
     },
     {
         id: 'geoforensics',
@@ -117,7 +117,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 4, // 1-4 members per team
         ruleBookUrl: '/assets/eventsRules/GEOFORENSICS.pdf',
         imageUrl: '/assets/eventImages/GEOFORENSICS.jpeg',
-        registrationClosed: true,
+        registrationClosed: false,
     },
     {
         id: 'strataseek',
@@ -130,7 +130,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 5, // 1-5 members per team
         ruleBookUrl: '/assets/eventsRules/STRATASEEK.pdf',
         imageUrl: '/assets/eventImages/STRATASEEK.jpeg',
-        registrationClosed: true,
+        registrationClosed: false,
     },
 ];
 
