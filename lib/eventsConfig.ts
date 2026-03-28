@@ -77,7 +77,7 @@ export const EVENTS: EventConfig[] = [
         maxTeamSize: 3, // 1-3 members per team
         ruleBookUrl: '/assets/eventsRules/GEOSCIENCExHACKATHON.pdf',
         imageUrl: '/assets/eventImages/GEOSCIENCExHACKATHON.jpeg',
-        registrationClosed: false,
+        registrationClosed: true,
     },
     {
         id: 'stratax',
