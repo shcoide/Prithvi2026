@@ -41,13 +41,11 @@ export default function Navbar() {
         router.push('/');
     }
 
-    /* Commenting out QR generation logic
     useEffect(() => {
         if (user?.registrationId) {
             QRCode.toDataURL(user.registrationId).then(setQr);
         }
     }, [user]);
-    */
 
     return (
         <nav className="navbar">
@@ -81,13 +79,11 @@ export default function Navbar() {
                         <button className="navbtn">Login</button>
                     </Link>
                 )}
-                {/* Commenting out Profile Link in mobile menu
                 {user && (
                     <Link href="/profile" onClick={() => setMenuOpen(false)}>
                         <button className="navbtn">Profile</button>
                     </Link>
                 )}
-                */}
 
             </div>
 
@@ -120,13 +116,17 @@ export default function Navbar() {
                                                 <div className="user-dropdown-email">{user.email}</div>
                                             </div>
                                         </div>
-                                        {/* Commenting out QR In Dropdown
-                                        <div className='user-dropdown-second-section'>
-                                            <div style={{ marginTop: "10px", textAlign: "center" }}>
-                                                {qr && <img src={qr} width={120} height={120} />}
+                                        {qr && (
+                                            <div style={{ textAlign: 'center', padding: '12px 0 4px' }}>
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={qr} alt="QR" width={120} height={120} style={{ borderRadius: 8 }} />
+                                                <div style={{ fontSize: 10, color: '#556', marginTop: 4 }}>Your Entry QR</div>
                                             </div>
-                                        </div>
-                                        */}
+                                        )}
+                                        <div className="user-dropdown-divider" />
+                                        <Link href="/profile" onClick={() => setDropdownOpen(false)} style={{ display: 'block', padding: '10px 16px', color: '#4fd1ff', fontSize: 13, textDecoration: 'none' }}>
+                                            👤 My Profile
+                                        </Link>
                                         <div className="user-dropdown-divider" />
                                         <button className="user-dropdown-logout" onClick={handleLogout}>
                                             🚪 Sign Out

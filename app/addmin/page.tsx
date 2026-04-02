@@ -49,7 +49,11 @@ interface EventReg {
 }
 
 type FilterStatus = 'all' | 'pending' | 'approved' | 'rejected';
-type Tab = 'participants' | 'events' | 'scanner';
+type Tab = 'participants' | 'events' | 'scanner' | 'attendance';
+
+// ── Feature Flags (set to true to enable) ────────────────────────────────────
+const ENABLE_DINNER = false;      // Phase 2 — flip to true when ready
+const ENABLE_CERTIFICATE = false; // Phase 3 — flip to true when ready
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
@@ -104,28 +108,65 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
     return (
         <div style={s.dashBg}>
+            <style>{`
+                @media (max-width: 768px) {
+                    .admin-header-right { display: none !important; }
+                }
+                @media (min-width: 769px) {
+                    .admin-mobile-nav { display: none !important; }
+                }
+            `}</style>
+            {/* ── Desktop Header ── */}
             <header style={s.header}>
                 <div style={s.headerLeft}>
                     <span style={s.headerLogo}>🌍</span>
                     <div>
-                        <div style={s.headerTitle}>Prithvi 2026 — Admin Panel</div>
+                        <div style={s.headerTitle}>Prithvi 2026 — Admin</div>
                         <div style={s.headerSub}>Internal Management</div>
                     </div>
                 </div>
-                <div style={s.headerRight}>
+                <div style={s.headerRight} className="admin-header-right">
                     <button onClick={() => setTab('participants')} style={{ ...s.tabBtn, ...(tab === 'participants' ? s.tabBtnActive : {}) }}>👥 Participants</button>
-                    <button onClick={() => setTab('scanner')} style={{ ...s.tabBtn, ...(tab === 'scanner' ? s.tabBtnActive : {}) }}>
-                        📷 Scanner
-                    </button>
-                    <button onClick={() => setTab('events')} style={{ ...s.tabBtn, ...(tab === 'events' ? s.tabBtnActive : {}) }}>🏆 Event Registrations</button>
-                    <button onClick={() => window.open('/api/addmin/export', '_blank')} style={s.exportBtn}>📊 Export Excel</button>
+                    <button onClick={() => setTab('scanner')} style={{ ...s.tabBtn, ...(tab === 'scanner' ? s.tabBtnActive : {}) }}>📷 Scanner</button>
+                    <button onClick={() => setTab('events')} style={{ ...s.tabBtn, ...(tab === 'events' ? s.tabBtnActive : {}) }}>🏆 Events</button>
+                    <button onClick={() => setTab('attendance')} style={{ ...s.tabBtn, ...(tab === 'attendance' ? s.tabBtnActive : {}) }}>📋 Attendance</button>
+                    <button onClick={() => window.open('/api/addmin/export', '_blank')} style={s.exportBtn}>📊 Export</button>
                     <button onClick={logout} style={s.logoutBtn}>Logout</button>
                 </div>
             </header>
 
-            {tab === 'participants' && <ParticipantsDashboard onToast={showToast} onLogout={onLogout} />}
-            {tab === 'events' && <EventsDashboard onToast={showToast} />}
-            {tab === 'scanner' && <ScannerDashboard onToast={showToast} />}
+            {/* ── Content ── */}
+            <div style={{ paddingBottom: 72 }}>
+                {tab === 'participants' && <ParticipantsDashboard onToast={showToast} onLogout={onLogout} />}
+                {tab === 'events' && <EventsDashboard onToast={showToast} />}
+                {tab === 'scanner' && <ScannerDashboard onToast={showToast} />}
+                {tab === 'attendance' && <AttendanceDashboard onToast={showToast} />}
+            </div>
+
+            {/* ── Mobile Bottom Nav ── */}
+            <nav style={s.mobileNav} className="admin-mobile-nav">
+                <button onClick={() => setTab('participants')} style={{ ...s.mobileNavBtn, ...(tab === 'participants' ? s.mobileNavBtnActive : {}) }}>
+                    <span style={{ fontSize: 22 }}>👥</span>
+                    <span style={{ fontSize: 10, marginTop: 2 }}>Participants</span>
+                </button>
+                <button onClick={() => setTab('scanner')} style={{ ...s.mobileNavBtn, ...(tab === 'scanner' ? s.mobileNavBtnActive : {}) }}>
+                    <span style={{ fontSize: 22 }}>📷</span>
+                    <span style={{ fontSize: 10, marginTop: 2 }}>Scanner</span>
+                </button>
+                <button onClick={() => setTab('events')} style={{ ...s.mobileNavBtn, ...(tab === 'events' ? s.mobileNavBtnActive : {}) }}>
+                    <span style={{ fontSize: 22 }}>🏆</span>
+                    <span style={{ fontSize: 10, marginTop: 2 }}>Events</span>
+                </button>
+                <button onClick={() => setTab('attendance')} style={{ ...s.mobileNavBtn, ...(tab === 'attendance' ? s.mobileNavBtnActive : {}) }}>
+                    <span style={{ fontSize: 22 }}>�</span>
+                    <span style={{ fontSize: 10, marginTop: 2 }}>Attendance</span>
+                </button>
+                <button onClick={logout} style={{ ...s.mobileNavBtn, color: '#ff6b6b' }}>
+                    <span style={{ fontSize: 22 }}>🚪</span>
+                    <span style={{ fontSize: 10, marginTop: 2 }}>Logout</span>
+                </button>
+            </nav>
+
             {toast && <div style={s.toast}>{toast}</div>}
         </div>
     );
@@ -135,12 +176,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => void; onLogout: () => void }) {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<FilterStatus>('all');
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<AdminUser | null>(null);
-    const [note, setNote] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [toggling, setToggling] = useState(false);
     const [filterPA, setFilterPA] = useState(false);
     const [filterDinner, setFilterDinner] = useState(false);
     const [filterCertificate, setFilterCertificate] = useState(false);
@@ -156,37 +193,7 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
 
     useEffect(() => { loadUsers(); }, [loadUsers]);
 
-    async function handleVerify(status: 'approved' | 'rejected') {
-        if (!selected) return;
-        setSaving(true);
-        try {
-            const res = await fetch('/api/addmin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ registrationId: selected.registrationId, action: 'status', status, adminNote: note }) });
-            if (!res.ok) throw new Error('Failed');
-            const updated = { ...selected, paymentStatus: status, adminNote: note };
-            setSelected(updated);
-            setUsers((prev) => prev.map((u) => u.registrationId === updated.registrationId ? updated : u));
-            onToast(status === 'approved' ? '✅ Payment approved!' : '❌ Payment rejected!');
-        } catch { onToast('Error updating status'); }
-        finally { setSaving(false); }
-    }
-
-    async function handleAdminVerifiedToggle(newValue: boolean) {
-        if (!selected) return;
-        setToggling(true);
-        try {
-            const res = await fetch('/api/addmin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ registrationId: selected.registrationId, action: 'toggle', adminVerified: newValue, adminNote: note }) });
-            if (!res.ok) throw new Error('Failed');
-            const updated = { ...selected, adminVerified: newValue, adminNote: note };
-            setSelected(updated);
-            setUsers((prev) => prev.map((u) => u.registrationId === updated.registrationId ? updated : u));
-            onToast(newValue ? '🔓 Admin Verified!' : '🔒 Verification removed');
-        } catch { onToast('Error toggling'); }
-        finally { setToggling(false); }
-    }
-
     const displayed = users.filter((u) => {
-        if (filter !== 'all' && u.paymentStatus !== filter) return false;
-
         if (filterPA && !u.PA) return false;
         if (filterDinner && !u.DinnerTaken) return false;
         if (filterCertificate && !u.Certificate) return false;
@@ -203,55 +210,36 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
 
         return true;
     });
-    const counts = { all: users.length, pending: users.filter(u => u.paymentStatus === 'pending').length, approved: users.filter(u => u.paymentStatus === 'approved').length, rejected: users.filter(u => u.paymentStatus === 'rejected').length };
-    const verifiedCount = users.filter(u => u.adminVerified).length;
-    function uBool(v: boolean) {
-        return v ? 'true' : 'false';
-    }
     return (
         <div style={s.dashLayout}>
             <aside style={s.sidebar}>
-                <div style={{ padding: '12px 16px', color: '#32dc64', fontSize: 12, fontWeight: 600 }}>🔓 {verifiedCount} / {users.length} Admin Verified</div>
-                <div style={s.statsGrid}>
-                    {(['all', 'pending', 'approved', 'rejected'] as FilterStatus[]).map((st) => (
-                        <button key={st} onClick={() => setFilter(st)} style={{ ...s.statCard, ...(filter === st ? s.statCardActive : {}) }}>
-                            <div style={s.statNum}>{counts[st]}</div>
-                            <div style={s.statLabel}>{st === 'all' ? '📋 Total' : st === 'pending' ? '⏳ Pending' : st === 'approved' ? '✅ Approved' : '❌ Rejected'}</div>
-                        </button>
-                    ))}
-                </div>
+                <div style={{ padding: '12px 16px', color: '#4fd1ff', fontSize: 12, fontWeight: 600 }}>📋 {users.length} Registered</div>
                 <input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} style={s.searchInput} />
                 <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label>
+                    <label style={{ color: '#ccd', fontSize: 13 }}>
                         <input type="checkbox" checked={filterPA} onChange={(e) => setFilterPA(e.target.checked)} />
-                        {' '}PA
+                        {' '}✅ PA (Present)
                     </label>
-                    <label>
-                        <input type="checkbox" checked={filterDinner} onChange={(e) => setFilterDinner(e.target.checked)} />
-                        {' '}Dinner Taken
+                    <label style={{ color: ENABLE_DINNER ? '#ccd' : '#445', fontSize: 13, cursor: ENABLE_DINNER ? 'pointer' : 'default' }}>
+                        <input type="checkbox" checked={filterDinner} onChange={(e) => ENABLE_DINNER && setFilterDinner(e.target.checked)} disabled={!ENABLE_DINNER} />
+                        {' '}🍽 Dinner {!ENABLE_DINNER && '(coming soon)'}
                     </label>
-                    <label>
-                        <input type="checkbox" checked={filterCertificate} onChange={(e) => setFilterCertificate(e.target.checked)} />
-                        {' '}Certificate
+                    <label style={{ color: ENABLE_CERTIFICATE ? '#ccd' : '#445', fontSize: 13, cursor: ENABLE_CERTIFICATE ? 'pointer' : 'default' }}>
+                        <input type="checkbox" checked={filterCertificate} onChange={(e) => ENABLE_CERTIFICATE && setFilterCertificate(e.target.checked)} disabled={!ENABLE_CERTIFICATE} />
+                        {' '}📜 Certificate {!ENABLE_CERTIFICATE && '(coming soon)'}
                     </label>
                 </div>
                 <div style={s.userList}>
                     {loading ? <div style={s.loadingText}>Loading…</div> : displayed.length === 0 ? <div style={s.loadingText}>No results</div> :
                         displayed.map((u) => (
-                            <button key={u.registrationId} onClick={() => { setSelected(u); setNote(u.adminNote || ''); }} style={{ ...s.userRow, ...(selected?.registrationId === u.registrationId ? s.userRowActive : {}) }}>
+                            <button key={u.registrationId} onClick={() => setSelected(u)} style={{ ...s.userRow, ...(selected?.registrationId === u.registrationId ? s.userRowActive : {}) }}>
                                 <div style={s.userRowTop}>
                                     <span style={s.userRowName}>{u.name}</span>
-                                    <div style={{ display: 'flex', gap: 4 }}>
-                                        {u.adminVerified && <span title="Admin Verified">🔓</span>}
-                                        <span style={{ ...s.statusBadge, ...(u.paymentStatus === 'approved' ? s.badgeApproved : u.paymentStatus === 'rejected' ? s.badgeRejected : s.badgePending) }}>{u.paymentStatus}</span>
-                                    </div>
+                                    <span style={{ fontSize: 11, color: u.PA ? '#32dc64' : '#556' }}>{u.PA ? '✅' : '○'}</span>
                                 </div>
                                 <div style={s.userRowId}>{u.registrationId}</div>
                                 <div style={s.userRowEmail}>{u.email}</div>
                                 <div style={s.userRowCollege}>{u.college}</div>
-                                <div style={{ fontSize: 11, color: '#888' }}>
-                                    PA: {u.PA ? 'true' : 'false'} | Dinner: {u.DinnerTaken ? 'true' : 'false'} | Cert: {u.Certificate ? 'true' : 'false'}
-                                </div>
                             </button>
                         ))
                     }
@@ -264,43 +252,18 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
                     <div style={s.detailCard}>
                         <div style={s.detailHeader}>
                             <div><h2 style={s.detailName}>{selected.name}</h2><div style={s.detailId}>{selected.registrationId}</div></div>
-                            <span style={{ ...s.statusBadgeLg, ...(selected.paymentStatus === 'approved' ? s.badgeApproved : selected.paymentStatus === 'rejected' ? s.badgeRejected : s.badgePending) }}>{selected.paymentStatus.toUpperCase()}</span>
                         </div>
                         <div style={s.infoGrid}>
                             {[['📧 Email', selected.email], ['📞 Phone', selected.phone], ['🏫 College', selected.college],
                             ['⚧ Gender', selected.gender], ['📅 Registered', new Date(selected.registeredAt).toLocaleString('en-IN')],
-                            ['✉️ Email verified', selected.emailVerified ? '✅ Yes' : '❌ No'], ['🎫 PA', uBool(selected.PA)],
-                            ['🍽 Dinner', uBool(selected.DinnerTaken)],
-                            ['📜 Certificate', uBool(selected.Certificate)],
-                            ['🏠 Hall Alloted', selected.hall_alloted || ''],].map(([label, value]) => (
+                            ['✉️ Email Verified', selected.emailVerified ? '✅ Yes' : '❌ No'],
+                            ['🏠 Hall Allotted', selected.hall_alloted || 'N/A'],
+                            ['🎫 PA', selected.PA ? '✅ Present' : 'N/A'],
+                            ['🍽 Dinner', selected.DinnerTaken ? '✅ Taken' : 'N/A'],
+                            ['📜 Certificate', selected.Certificate ? '✅ Issued' : 'N/A'],
+                            ].map(([label, value]) => (
                                 <div key={label} style={s.infoItem}><div style={s.infoLabel}>{label}</div><div style={s.infoValue}>{value}</div></div>
                             ))}
-                        </div>
-                        <div style={s.screenshotSection}>
-                            <h3 style={s.screenshotTitle}>💳 Payment Screenshot</h3>
-                            {selected.screenshotUrl ? (
-                                <div style={s.screenshotWrapper}>
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={selected.screenshotUrl} alt="Payment screenshot" style={s.screenshotImg} />
-                                    <a href={selected.screenshotUrl} target="_blank" rel="noreferrer" style={s.screenshotLink}>Open full image ↗</a>
-                                </div>
-                            ) : <div style={s.screenshotMissing}>No screenshot uploaded</div>}
-                        </div>
-                        <div style={s.noteSection}><label style={s.noteLabel}>Admin Note</label><textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note…" style={s.noteTextarea} rows={3} /></div>
-                        <div style={s.actionRow}>
-                            <button onClick={() => handleVerify('approved')} disabled={saving || selected.paymentStatus === 'approved'} style={{ ...s.actionBtn, ...s.approveBtn, ...(selected.paymentStatus === 'approved' ? s.actionBtnDisabled : {}) }}>{saving ? '…' : '✅ Approve'}</button>
-                            <button onClick={() => handleVerify('rejected')} disabled={saving || selected.paymentStatus === 'rejected'} style={{ ...s.actionBtn, ...s.rejectBtn, ...(selected.paymentStatus === 'rejected' ? s.actionBtnDisabled : {}) }}>{saving ? '…' : '❌ Reject'}</button>
-                        </div>
-                        <div style={s.toggleSection}>
-                            <div style={s.toggleHeader}>
-                                <div><div style={s.toggleTitle}>🔓 Admin Payment Verification</div><div style={s.toggleSubtitle}>Manually confirm the payment is genuine.</div></div>
-                                <button onClick={() => handleAdminVerifiedToggle(!selected.adminVerified)} disabled={toggling} style={{ ...s.toggleSwitch, ...(selected.adminVerified ? s.toggleSwitchOn : s.toggleSwitchOff) }}>
-                                    <div style={{ ...s.toggleKnob, transform: selected.adminVerified ? 'translateX(26px)' : 'translateX(2px)' }} />
-                                </button>
-                            </div>
-                            <div style={{ ...s.toggleStatus, ...(selected.adminVerified ? s.toggleStatusOn : s.toggleStatusOff) }}>
-                                {toggling ? 'Saving…' : selected.adminVerified ? '✅ Verified by admin' : '⏳ Not yet verified'}
-                            </div>
                         </div>
                     </div>
                 )}
@@ -314,20 +277,24 @@ function ParticipantsDashboard({ onToast, onLogout }: { onToast: (m: string) => 
 function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
     const [scannedId, setScannedId] = useState('');
     const [user, setUser] = useState<any>(null);
-
     const [PA, setPA] = useState(false);
     const [DinnerTaken, setDinnerTaken] = useState(false);
     const [Certificate, setCertificate] = useState(false);
     const [hall, setHall] = useState('');
+    const [cameraOpen, setCameraOpen] = useState(true);
+    // Double-confirm dialog state
+    const [confirmField, setConfirmField] = useState<null | 'PA' | 'DinnerTaken' | 'Certificate'>(null);
+    const [confirmValue, setConfirmValue] = useState(false);
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const readerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (scannerRef.current) return;
+        if (!cameraOpen) return; // don't start if camera is closed
         let isMounted = true;
         if (!readerRef.current) return;
 
+        // Reset any previous instance
+        scannerRef.current = null;
         const html5QrCode = new Html5Qrcode(readerRef.current.id);
         scannerRef.current = html5QrCode;
 
@@ -390,7 +357,7 @@ function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
                 qr.clear();
             } catch { }
         };
-    }, []);
+    }, [cameraOpen]);
 
     const onScanSuccess = async (decodedText: string) => {
         if (!decodedText) return;
@@ -428,6 +395,11 @@ function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
             setDinnerTaken(data.user.DinnerTaken);
             setCertificate(data.user.Certificate);
             setHall(data.user.hall_alloted || '');
+            // Close camera after successful scan
+            setCameraOpen(false);
+            if (scannerRef.current) {
+                try { await scannerRef.current.stop(); } catch { }
+            }
 
         } catch (err) {
             console.error(err);
@@ -439,218 +411,139 @@ function ScannerDashboard({ onToast }: { onToast: (m: string) => void }) {
         const res = await fetch('/api/addmin/usersv2/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                registrationId: scannedId,
-                PA,
-                DinnerTaken,
-                Certificate,
-                hall_alloted: hall,
-            }),
+            body: JSON.stringify({ registrationId: scannedId, PA, DinnerTaken, Certificate, hall_alloted: hall }),
         });
-
-        if (!res.ok) {
-            onToast('Update failed');
-            return;
-        }
-
+        if (!res.ok) { onToast('Update failed'); return; }
         onToast('✅ Updated successfully');
     }
 
     async function handleNext() {
-        setUser(null);
-        setScannedId('');
-
-        if (scannerRef.current) {
-            try {
-                await scannerRef.current.resume();
-            } catch (e) {
-                console.log("Resume failed", e);
-            }
-        }
+        setUser(null); setScannedId('');
+        setCameraOpen(true);
+        // Scanner will auto-restart via useEffect re-run after readerRef remount
     }
+
+    // Called when admin taps a checkbox — open confirm dialog instead of instant toggle
+    function requestConfirm(field: 'PA' | 'DinnerTaken' | 'Certificate', newVal: boolean) {
+        setConfirmField(field);
+        setConfirmValue(newVal);
+    }
+
+    // Admin confirmed — apply the toggle and save immediately
+    async function handleConfirmed() {
+        if (!confirmField) return;
+        const updates = { PA, DinnerTaken, Certificate };
+        if (confirmField === 'PA') { setPA(confirmValue); updates.PA = confirmValue; }
+        if (confirmField === 'DinnerTaken') { setDinnerTaken(confirmValue); updates.DinnerTaken = confirmValue; }
+        if (confirmField === 'Certificate') { setCertificate(confirmValue); updates.Certificate = confirmValue; }
+        setConfirmField(null);
+        const res = await fetch('/api/addmin/usersv2/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ registrationId: scannedId, ...updates, hall_alloted: hall }),
+        });
+        if (!res.ok) onToast('Update failed');
+        else onToast('✅ Saved!');
+    }
+
+    const STATUS_COLOR = user?.paymentStatus === 'approved' ? '#32dc64' : user?.paymentStatus === 'rejected' ? '#ff5050' : '#ffc832';
+    const STATUS_BG = user?.paymentStatus === 'approved' ? 'rgba(50,220,100,0.15)' : user?.paymentStatus === 'rejected' ? 'rgba(255,80,80,0.15)' : 'rgba(255,200,50,0.15)';
+
+    const confirmLabels: Record<string, string> = {
+        PA: '✅ Mark as Present',
+        DinnerTaken: '🍽 Mark Dinner Taken',
+        Certificate: '📜 Issue Certificate',
+    };
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                background: "#050a19",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                padding: "32px 20px",
-                gap: 24,
-            }}
-        >
-            <div
-                style={{
-                    width: 420,
-                    height: 420,
-                    maxWidth: 420,
-                    maxHeight: 420,
-                    overflow: "hidden",
-                    borderRadius: 12,
-                    position: "relative",
-                }}
-            >
-                <div
-                    ref={readerRef}
-                    id="reader"
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                    }}
-                />
-            </div>
+        <div style={{ minHeight: "calc(100vh - 65px)", background: "#050a19", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "20px 16px 100px", gap: 16, boxSizing: "border-box" }}>
 
-            {user && (
-                <div
-                    style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 20,
-                        padding: "28px 24px",
-                        width: "100%",
-                        maxWidth: 420,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 14,
-                        color: "#fff",
-                    }}
-                >
-                    <h3
-                        style={{
-                            fontSize: 22,
-                            fontWeight: 700,
-                            margin: 0,
-                        }}
-                    >
-                        {user.name}
-                    </h3>
+            {/* Camera Viewport — only shown when cameraOpen */}
+            {cameraOpen && (
+                <div style={{ width: "100%", maxWidth: 380, aspectRatio: "1", overflow: "hidden", borderRadius: 16, position: "relative", border: "2px solid rgba(79,209,255,0.3)" }}>
+                    <div ref={readerRef} id="reader" style={{ width: "100%", height: "100%" }} />
+                </div>
+            )}
+            {cameraOpen && !user && (
+                <div style={{ color: '#667', fontSize: 13, textAlign: 'center' }}>📷 Point camera at participant QR code</div>
+            )}
 
-                    <p
-                        style={{
-                            fontSize: 14,
-                            color: "#889",
-                            margin: 0,
-                        }}
-                    >
-                        {user.registrationId}
-                    </p>
-
-                    <label
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            fontSize: 14,
-                            color: "#ccd",
-                            cursor: "pointer",
-                        }}
-                    >
-                        <input
-                            type="checkbox"
-                            checked={PA}
-                            onChange={(e) => setPA(e.target.checked)}
-                        />
-                        PA
-                    </label>
-
-                    <label
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            fontSize: 14,
-                            color: "#ccd",
-                            cursor: "pointer",
-                        }}
-                    >
-                        <input
-                            type="checkbox"
-                            checked={DinnerTaken}
-                            onChange={(e) => setDinnerTaken(e.target.checked)}
-                        />
-                        Dinner Taken
-                    </label>
-
-                    <label
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            fontSize: 14,
-                            color: "#ccd",
-                            cursor: "pointer",
-                        }}
-                    >
-                        <input
-                            type="checkbox"
-                            checked={Certificate}
-                            onChange={(e) => setCertificate(e.target.checked)}
-                        />
-                        Certificate
-                    </label>
-
-                    <select
-                        value={hall}
-                        onChange={(e) => setHall(e.target.value)}
-                        style={{
-                            background: "rgba(255,255,255,0.07)",
-                            border: "1px solid rgba(255,255,255,0.15)",
-                            borderRadius: 10,
-                            color: "#fff",
-                            padding: "12px 14px",
-                            fontSize: 14,
-                            outline: "none",
-                        }}
-                    >
-                        <option value="">Select Hall</option>
-                        <option value="Hall A">Hall A</option>
-                        <option value="Hall B">Hall B</option>
-                        <option value="Hall C">Hall C</option>
-                    </select>
-
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 12,
-                            marginTop: 10,
-                        }}
-                    >
-                        <button
-                            onClick={handleSave}
-                            style={{
-                                flex: 1,
-                                background: "linear-gradient(135deg,#4fd1ff,#7c3aed)",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: 10,
-                                padding: "12px 16px",
-                                fontSize: 14,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                            }}
-                        >
-                            Save
-                        </button>
-
-                        <button
-                            onClick={handleNext}
-                            style={{
-                                flex: 1,
-                                background: "rgba(255,255,255,0.08)",
-                                color: "#fff",
-                                border: "1px solid rgba(255,255,255,0.2)",
-                                borderRadius: 10,
-                                padding: "12px 16px",
-                                fontSize: 14,
-                                fontWeight: 600,
-                                cursor: "pointer",
-                            }}
-                        >
-                            Scan Next
-                        </button>
+            {/* Double-Confirm Modal */}
+            {confirmField && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, padding: 20 }}>
+                    <div style={{ background: '#0d1530', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 20, padding: 28, width: '100%', maxWidth: 340, textAlign: 'center' }}>
+                        <div style={{ fontSize: 40, marginBottom: 12 }}>{confirmValue ? '✅' : '❌'}</div>
+                        <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Are you sure?</div>
+                        <div style={{ color: '#889', fontSize: 14, marginBottom: 24 }}>
+                            {confirmValue ? confirmLabels[confirmField] : `Remove: ${confirmLabels[confirmField]}`}
+                            {' for '}<strong style={{ color: '#4fd1ff' }}>{user?.name}</strong>?
+                        </div>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            <button onClick={() => setConfirmField(null)} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#ccc', fontSize: 14, cursor: 'pointer' }}>Cancel</button>
+                            <button onClick={handleConfirmed} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#4fd1ff,#7c3aed)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Confirm</button>
+                        </div>
                     </div>
+                </div>
+            )}
+
+            {/* Scanned User Card */}
+            {user && (
+                <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "20px 16px", width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 12, color: "#fff", boxSizing: "border-box" }}>
+
+                    {/* Status Badge */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{user.name}</h3>
+                            <p style={{ fontSize: 12, color: '#4fd1ff', margin: '4px 0 0', letterSpacing: 1 }}>{user.registrationId}</p>
+                        </div>
+                        <span style={{ background: STATUS_BG, color: STATUS_COLOR, padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>
+                            {(user.paymentStatus || 'pending').toUpperCase()}
+                        </span>
+                    </div>
+
+                    {/* Basic Info + Hall */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        {[['📧', user.email], ['📞', user.phone], ['🏫', user.college], ['⚧', user.gender]].map(([icon, val]) => (
+                            <div key={icon as string} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: '#bbc' }}>
+                                <span style={{ marginRight: 4 }}>{icon}</span>{val || '—'}
+                            </div>
+                        ))}
+                    </div>
+                    {/* Hall Allotted */}
+                    <div style={{ background: 'rgba(79,209,255,0.08)', border: '1px solid rgba(79,209,255,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: '#4fd1ff', fontWeight: 600 }}>
+                        🏠 Hall Allotted: <strong>{hall || 'Not assigned'}</strong>
+                    </div>
+
+                    {/* PA — always active */}
+                    <label
+                        onClick={() => requestConfirm('PA', !PA)}
+                        style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 15, color: PA ? "#32dc64" : "#ccd", cursor: "pointer", background: PA ? "rgba(50,220,100,0.08)" : "rgba(255,255,255,0.04)", border: `1px solid ${PA ? "rgba(50,220,100,0.3)" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, padding: "14px 16px", fontWeight: 600, transition: "all 0.2s" }}
+                    >
+                        <input type="checkbox" checked={PA} readOnly style={{ width: 18, height: 18, accentColor: "#32dc64", cursor: 'pointer' }} />
+                        ✅ Present / Absent
+                    </label>
+
+                    {/* Dinner — controlled by ENABLE_DINNER */}
+                    <label
+                        onClick={() => ENABLE_DINNER && requestConfirm('DinnerTaken', !DinnerTaken)}
+                        style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 15, color: ENABLE_DINNER ? (DinnerTaken ? "#ffc832" : "#ccd") : '#445', cursor: ENABLE_DINNER ? "pointer" : 'not-allowed', background: DinnerTaken ? "rgba(255,200,50,0.08)" : "rgba(255,255,255,0.03)", border: `1px solid ${DinnerTaken ? "rgba(255,200,50,0.3)" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "14px 16px", fontWeight: 600, opacity: ENABLE_DINNER ? 1 : 0.5 }}
+                    >
+                        <input type="checkbox" checked={DinnerTaken} readOnly disabled={!ENABLE_DINNER} style={{ width: 18, height: 18, cursor: ENABLE_DINNER ? 'pointer' : 'not-allowed' }} />
+                        🍽 Dinner Taken {!ENABLE_DINNER && <span style={{ fontSize: 11, color: '#556', marginLeft: 4 }}>(not active)</span>}
+                    </label>
+
+                    {/* Certificate — controlled by ENABLE_CERTIFICATE */}
+                    <label
+                        onClick={() => ENABLE_CERTIFICATE && requestConfirm('Certificate', !Certificate)}
+                        style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 15, color: ENABLE_CERTIFICATE ? (Certificate ? "#a78bfa" : "#ccd") : '#445', cursor: ENABLE_CERTIFICATE ? "pointer" : 'not-allowed', background: Certificate ? "rgba(124,58,237,0.08)" : "rgba(255,255,255,0.03)", border: `1px solid ${Certificate ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "14px 16px", fontWeight: 600, opacity: ENABLE_CERTIFICATE ? 1 : 0.5 }}
+                    >
+                        <input type="checkbox" checked={Certificate} readOnly disabled={!ENABLE_CERTIFICATE} style={{ width: 18, height: 18, cursor: ENABLE_CERTIFICATE ? 'pointer' : 'not-allowed' }} />
+                        📜 Certificate {!ENABLE_CERTIFICATE && <span style={{ fontSize: 11, color: '#556', marginLeft: 4 }}>(not active)</span>}
+                    </label>
+
+                    {/* Actions */}
+                    <button onClick={handleNext} style={{ width: '100%', background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "13px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 4 }}>
+                        📷 Scan Next Person
+                    </button>
                 </div>
             )}
         </div>
@@ -783,6 +676,114 @@ function TeamsTable({ teams, onParticipantClick }: { teams: EventReg[]; onPartic
     );
 }
 
+// ── Attendance Dashboard ──────────────────────────────────────────────────────
+function AttendanceDashboard({ onToast }: { onToast: (m: string) => void }) {
+    const [users, setUsers] = useState<AdminUser[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [paFilter, setPaFilter] = useState<'all' | 'yes' | 'no'>('all');
+    const [dinnerFilter, setDinnerFilter] = useState<'all' | 'yes' | 'no'>('all');
+    const [certFilter, setCertFilter] = useState<'all' | 'yes' | 'no'>('all');
+    const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        fetch('/api/addmin/usersv2')
+            .then(r => r.json())
+            .then(d => setUsers(d.users || []))
+            .catch(() => onToast('Failed to load'))
+            .finally(() => setLoading(false));
+    }, [onToast]);
+
+    const filtered = users.filter(u => {
+        if (paFilter === 'yes' && !u.PA) return false;
+        if (paFilter === 'no' && u.PA) return false;
+        if (dinnerFilter === 'yes' && !u.DinnerTaken) return false;
+        if (dinnerFilter === 'no' && u.DinnerTaken) return false;
+        if (certFilter === 'yes' && !u.Certificate) return false;
+        if (certFilter === 'no' && u.Certificate) return false;
+        if (search) {
+            const q = search.toLowerCase();
+            return u.name.toLowerCase().includes(q) || u.registrationId.toLowerCase().includes(q) || u.college.toLowerCase().includes(q);
+        }
+        return true;
+    });
+
+    const paCount = users.filter(u => u.PA).length;
+    const dinnerCount = users.filter(u => u.DinnerTaken).length;
+    const certCount = users.filter(u => u.Certificate).length;
+
+    const fStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: '#ccc', borderRadius: 10, padding: '10px 14px', fontSize: 13, outline: 'none', cursor: 'pointer' };
+
+    return (
+        <div style={{ padding: '20px 16px 100px', background: '#050a19', minHeight: 'calc(100vh - 65px)', color: '#ccc', fontFamily: 'system-ui,sans-serif', boxSizing: 'border-box' }}>
+
+            {/* Summary Counts */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+                {[
+                    { label: '✅ Present', val: paCount, color: '#32dc64', bg: 'rgba(50,220,100,0.1)' },
+                    { label: '🍽 Dinner', val: dinnerCount, color: '#ffc832', bg: 'rgba(255,200,50,0.1)', disabled: !ENABLE_DINNER },
+                    { label: '📜 Certificate', val: certCount, color: '#a78bfa', bg: 'rgba(124,58,237,0.1)', disabled: !ENABLE_CERTIFICATE },
+                ].map(({ label, val, color, bg, disabled }) => (
+                    <div key={label} style={{ background: bg, borderRadius: 12, padding: '12px 8px', textAlign: 'center', opacity: disabled ? 0.4 : 1 }}>
+                        <div style={{ color, fontSize: 22, fontWeight: 700 }}>{val}</div>
+                        <div style={{ color: '#889', fontSize: 11, marginTop: 2 }}>{label}{disabled ? ' (soon)' : ''}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Filters */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+                <select value={paFilter} onChange={e => setPaFilter(e.target.value as any)} style={fStyle}>
+                    <option value="all">✅ PA: All</option>
+                    <option value="yes">Present only</option>
+                    <option value="no">Absent only</option>
+                </select>
+                <select value={dinnerFilter} onChange={e => ENABLE_DINNER && setDinnerFilter(e.target.value as any)} disabled={!ENABLE_DINNER} style={{ ...fStyle, opacity: ENABLE_DINNER ? 1 : 0.4 }}>
+                    <option value="all">🍽 Dinner: All</option>
+                    <option value="yes">Taken only</option>
+                    <option value="no">Not taken</option>
+                </select>
+                <select value={certFilter} onChange={e => ENABLE_CERTIFICATE && setCertFilter(e.target.value as any)} disabled={!ENABLE_CERTIFICATE} style={{ ...fStyle, opacity: ENABLE_CERTIFICATE ? 1 : 0.4 }}>
+                    <option value="all">📜 Cert: All</option>
+                    <option value="yes">Issued only</option>
+                    <option value="no">Not issued</option>
+                </select>
+                <button onClick={() => window.open('/api/addmin/attendance-export', '_blank')} style={{ background: 'rgba(50,220,100,0.15)', border: '1px solid rgba(50,220,100,0.3)', color: '#32dc64', borderRadius: 10, padding: '10px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    📊 Export Attendance
+                </button>
+            </div>
+
+            <input placeholder="Search name / ID / college…" value={search} onChange={e => setSearch(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#ccc', padding: '10px 14px', fontSize: 13, outline: 'none', marginBottom: 14, boxSizing: 'border-box' }} />
+
+            <div style={{ color: '#4fd1ff', fontSize: 12, marginBottom: 10 }}>{filtered.length} of {users.length} participants</div>
+
+            {loading ? <div style={s.loadingText}>Loading…</div> : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {filtered.map(u => (
+                        <div key={u.registrationId} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                            <div>
+                                <div style={{ color: '#ddd', fontWeight: 600, fontSize: 14 }}>{u.name}</div>
+                                <div style={{ color: '#4fd1ff', fontSize: 11, letterSpacing: 1 }}>{u.registrationId}</div>
+                                <div style={{ color: '#556', fontSize: 11 }}>{u.college}</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: u.PA ? 'rgba(50,220,100,0.15)' : 'rgba(255,255,255,0.06)', color: u.PA ? '#32dc64' : '#556' }}>
+                                    {u.PA ? '✅ Present' : 'Absent'}
+                                </span>
+                                <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: ENABLE_DINNER && u.DinnerTaken ? 'rgba(255,200,50,0.15)' : 'rgba(255,255,255,0.06)', color: ENABLE_DINNER && u.DinnerTaken ? '#ffc832' : '#556', opacity: ENABLE_DINNER ? 1 : 0.4 }}>
+                                    {u.DinnerTaken ? '🍽 Dinner' : 'No Dinner'}
+                                </span>
+                                <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: ENABLE_CERTIFICATE && u.Certificate ? 'rgba(124,58,237,0.15)' : 'rgba(255,255,255,0.06)', color: ENABLE_CERTIFICATE && u.Certificate ? '#a78bfa' : '#556', opacity: ENABLE_CERTIFICATE ? 1 : 0.4 }}>
+                                    {u.Certificate ? '📜 Cert' : 'No Cert'}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ── Styles ────────────────────────────────────────────────────────────────────
 const s: Record<string, React.CSSProperties> = {
     loginBg: { minHeight: '100vh', background: '#050a19', display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -808,8 +809,11 @@ const s: Record<string, React.CSSProperties> = {
     exportBtn: { background: 'rgba(50,220,100,0.15)', border: '1px solid rgba(50,220,100,0.3)', color: '#32dc64', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
     toast: { position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', background: '#181f38', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '12px 28px', borderRadius: 12, fontSize: 14, fontWeight: 600, zIndex: 9999, pointerEvents: 'none' },
 
-    dashLayout: { display: 'flex', height: 'calc(100vh - 65px)' },
-    sidebar: { width: 360, minWidth: 320, borderRight: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    dashLayout: { display: 'flex', minHeight: 'calc(100vh - 65px)', flexDirection: 'row' },
+    sidebar: { width: 360, minWidth: 280, maxWidth: '100%', borderRight: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    mobileNav: { display: 'flex', position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(5,10,25,0.97)', borderTop: '1px solid rgba(255,255,255,0.08)', zIndex: 200, padding: '6px 0 8px' },
+    mobileNavBtn: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: '#667', cursor: 'pointer', padding: '4px 0', gap: 2, fontFamily: 'system-ui,sans-serif' },
+    mobileNavBtnActive: { color: '#4fd1ff' },
     statsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, borderBottom: '1px solid rgba(255,255,255,0.06)' },
     statCard: { background: 'transparent', border: 'none', padding: '14px 16px', cursor: 'pointer', textAlign: 'center', borderBottom: '2px solid transparent', transition: 'all .15s' },
     statCardActive: { background: 'rgba(79,209,255,0.08)', borderBottom: '2px solid #4fd1ff' },
