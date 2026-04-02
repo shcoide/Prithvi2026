@@ -39,7 +39,6 @@ export default function ProfilePage() {
                 <div style={ps.avatar}>{user.name?.charAt(0)?.toUpperCase()}</div>
                 <h1 style={ps.heroName}>{user.name}</h1>
                 <div style={ps.heroId}>{user.registrationId || "—"}</div>
-                <div style={ps.heroHall}>🏠 Hall: {user.hall_alloted || "Not assigned"}</div>
             </div>
 
             {/* QR Code */}
@@ -78,7 +77,6 @@ export default function ProfilePage() {
                     ["PA Status", user.PA ? "✅ Present" : "N/A"],
                     ["Dinner Taken", user.DinnerTaken ? "✅ Yes" : "N/A"],
                     ["Certificate", user.Certificate ? "✅ Issued" : "N/A"],
-                    ["Hall Allotted", user.hall_alloted || "Not assigned"],
                 ].map(([label, value]) => (
                     <div key={label} style={ps.cardRow}>
                         <span style={ps.cardLabel}>{label}</span>
