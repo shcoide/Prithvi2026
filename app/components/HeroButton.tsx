@@ -10,15 +10,15 @@ export default function HeroButton() {
 
     if (user) {
         return (
-            <Link href="/events">
-                <button className="btn">Event Registration →</button>
+            <Link href="/profile">
+                <button className="btn">My Profile →</button>
             </Link>
         );
     }
 
     return (
-        <Link href="/register">
-            <button className="btn">Register Now</button>
+        <Link href="/login">
+            <button className="btn">Login</button>
         </Link>
     );
 }

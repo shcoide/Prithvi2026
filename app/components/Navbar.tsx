@@ -10,6 +10,7 @@ import QRCode from "qrcode";
 const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/events', label: 'Events' },
+    { href: '/schedule', label: 'Schedule' },
     { href: '/gallery', label: 'Gallery' },
     { href: '/team', label: 'Team' },
     { href: '/contact', label: 'Contact' },
