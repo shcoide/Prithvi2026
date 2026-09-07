@@ -1,5 +1,18 @@
 # Prithvi 2026
 
+Registration and attendance platform for Prithvi 2026 (IIT Kharagpur's Earth Science symposium) — in production it processed 600+ participant registrations and served 1000+ concurrent users on a PM2-managed Node process on a DigitalOcean Droplet.
+
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
+![DigitalOcean](https://img.shields.io/badge/DigitalOcean-0080FF?style=flat&logo=digitalocean&logoColor=white)
+![PM2](https://img.shields.io/badge/PM2-2B037A?style=flat&logo=pm2&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
+
+**Live Demo:** Down as of April 2026 — the fest concluded and the app (previously hosted at `prithvi2026.vercel.app`, MongoDB data since cleared) is no longer publicly viewable. Screenshots below.
+
+[Add a screenshot or GIF here before making this repo public]
+
 The official web application for **Prithvi**, the annual Earth Science symposium organized by the Department of Geology and Geophysics, **IIT Kharagpur**. Built to handle the complete participant lifecycle — event browsing, registration with OTP-verified email and payment screenshot uploads, QR-based attendance tracking, and an admin panel for the fest organizers.
 
 Built with [Next.js](https://nextjs.org) (App Router), MongoDB Atlas, and several third-party integrations (Brevo, Google Sheets, Uploadthing).
