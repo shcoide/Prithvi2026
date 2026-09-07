@@ -9,9 +9,7 @@ Registration and attendance platform for Prithvi 2026 (IIT Kharagpur's Earth Sci
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
 
-**Live Demo:** Down as of April 2026 — the fest concluded and the app (previously hosted at `prithvi2026.vercel.app`, MongoDB data since cleared) is no longer publicly viewable. Screenshots below.
-
-[Add a screenshot or GIF here before making this repo public]
+**Live:** https://prithvi2026.vercel.app/ — still deployed and connected to MongoDB Atlas, but the fest concluded in April 2026 and the registration data has since been cleared, so it no longer reflects real event data.
 
 The official web application for **Prithvi**, the annual Earth Science symposium organized by the Department of Geology and Geophysics, **IIT Kharagpur**. Built to handle the complete participant lifecycle — event browsing, registration with OTP-verified email and payment screenshot uploads, QR-based attendance tracking, and an admin panel for the fest organizers.
 
@@ -21,7 +19,7 @@ Built with [Next.js](https://nextjs.org) (App Router), MongoDB Atlas, and severa
 
 ## Deployment Status
 
-> **Prithvi 2026 has concluded.** The fest ran successfully, and the DigitalOcean Droplet provisioned for the event has been shut down — IIT Kharagpur's DigitalOcean subscription for this project is no longer active. The application has been migrated to **Vercel** for archival and development purposes; it isn't live as a public event platform anymore, but everything runs correctly and the deployment is maintained as a working reference.
+> **Prithvi 2026 has concluded.** During the fest, the application ran on a PM2-managed process on a DigitalOcean Droplet and handled 600+ participant registrations with 1000+ concurrent users at peak. After the event, that Droplet was shut down — IIT Kharagpur's DigitalOcean subscription for this project is no longer active. The application has since been migrated to **Vercel**, where it is still deployed and connected to MongoDB Atlas at [prithvi2026.vercel.app](https://prithvi2026.vercel.app/); the event data has been cleared, so it now runs as an archival/development deployment rather than a live public event platform.
 >
 > If you're here to understand how the live production system was architected, go to [Production Architecture (DigitalOcean)](#production-architecture-digitalocean). For the current state of the project, see [Current Deployment (Vercel)](#current-deployment-vercel).
 
@@ -130,7 +128,7 @@ Vercel was a viable option from day one given the app's architecture, but the Dr
 
 ## Current Deployment (Vercel)
 
-After Prithvi 2026 concluded, the DigitalOcean subscription was not renewed. The app has been migrated to Vercel, where it runs in its current form as a development and archival deployment.
+After Prithvi 2026 concluded, the DigitalOcean subscription was not renewed. The app is now live at **https://prithvi2026.vercel.app/**, deployed on Vercel and connected to the same MongoDB Atlas cluster used during the fest, where it runs as a development and archival deployment.
 
 ### Why the Migration Was Clean
 
@@ -150,13 +148,17 @@ The application was serverless-compatible by design — no local filesystem usag
 
 The only configuration change that actually mattered: **MongoDB Atlas Network Access** had to be opened to `0.0.0.0/0` because Vercel serverless functions don't have a static outbound IP. On the Droplet, we allowlisted a single IP. On Vercel, that model doesn't apply.
 
-### Setting It Up on Vercel
+### Migration Steps: DigitalOcean → Vercel
 
-1. Import the repo at [vercel.com/new](https://vercel.com/new). Next.js is auto-detected; the default build command (`next build`) works without any changes.
-2. Add all environment variables in **Project Settings → Environment Variables** — see the full list in [Environment Variables](#environment-variables) below. Never put them in a committed file.
-3. In **MongoDB Atlas → Network Access**, allow `0.0.0.0/0`. This is required because Vercel functions share a non-static IP range across deployments.
-   - If security posture matters, use the [Vercel–MongoDB Atlas integration](https://vercel.com/integrations/mongodb) instead — it manages the connection credential at the Atlas level rather than opening up all IPs.
-4. Point `prithvi2026.com` to Vercel under **Project Settings → Domains** and update DNS at the registrar. Vercel provisions and renews TLS automatically.
+This is what was actually done to move the running app from the Droplet to Vercel:
+
+1. Imported the repo at [vercel.com/new](https://vercel.com/new). Next.js was auto-detected, so the default build command (`next build`) worked with no changes to the app itself.
+2. Copied every environment variable from the Droplet's `.env` into **Project Settings → Environment Variables** on Vercel — see the full list in [Environment Variables](#environment-variables) below. The same MongoDB Atlas connection string, JWT secrets, and third-party API keys used during the fest carried over unchanged.
+3. Opened **MongoDB Atlas → Network Access** to `0.0.0.0/0`, replacing the single allowlisted Droplet IP. This was required because Vercel serverless functions don't share one static outbound IP.
+   - The [Vercel–MongoDB Atlas integration](https://vercel.com/integrations/mongodb) is the more secure alternative — it manages the connection credential at the Atlas level rather than opening up all IPs — but wasn't used for this migration.
+4. Repointed the domain from the Droplet's Nginx TLS setup to Vercel under **Project Settings → Domains**, updating DNS at the registrar. Vercel provisioned and now auto-renews TLS.
+
+The app has been running on Vercel since, with the same MongoDB Atlas database it used in production, live at **https://prithvi2026.vercel.app/**.
 
 ### Files That Are Now Obsolete (But Kept)
 
